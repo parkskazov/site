@@ -3,49 +3,186 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Тайный советник — AR-квест</title>
-    <!-- Подключаем A-Frame с надежного CDN (cdnjs) -->
-    <!-- AR.js с GitHub Pages напрямую (альтернативный источник) -->
+    <title>Тайный советник — квест в парке «Сказов»</title>
+    <!-- Локальные библиотеки (лежат рядом) -->
     <script src="./aframe.min.js"></script>
     <script src="./aframe-ar.js"></script>
     <style>
+        /* СБРОС */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* предотвращаем двойную прокрутку body */
+        }
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
         body {
-            margin: 0;
-            overflow: hidden;
             font-family: 'Segoe UI', 'Comic Neue', 'Comic Sans MS', cursive;
+            background: #1a472a;
+            color: #f9f2cf;
         }
-        .camera-error {
+
+        /* ========= ПРИВЕТСТВЕННАЯ СТРАНИЦА (ЛИСТАЕТСЯ) ========= */
+        .welcome-screen {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            height: 100%;
-            background: #1a472a;
+            height: 100%;                    /* фиксированная высота окна */
+            background: linear-gradient(135deg, #1e4a2f 0%, #0e2a1a 100%);
             z-index: 1000;
+            overflow-y: auto;                 /* включаем прокрутку */
+            padding: 20px 20px 40px;          /* верхний отступ 20px, нижний 40px */
             display: flex;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            color: #ffec9f;
-            font-size: 1.2rem;
-            padding: 20px;
             flex-direction: column;
-            gap: 20px;
+            align-items: center;
+            justify-content: flex-start;      /* начинаем сверху для корректного скролла */
+            box-sizing: border-box;
         }
-        .camera-error button {
-            background: #ffc857;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 40px;
-            font-size: 1.1rem;
-            font-weight: bold;
+
+        /* Для устройств с вырезом (iPhone) добавляем запас */
+        @supports (padding-top: constant(safe-area-inset-top)) {
+            .welcome-screen {
+                padding-top: calc(20px + constant(safe-area-inset-top));
+            }
+        }
+        @supports (padding-top: env(safe-area-inset-top)) {
+            .welcome-screen {
+                padding-top: calc(20px + env(safe-area-inset-top));
+            }
+        }
+
+        .welcome-card {
+            max-width: 550px;
+            width: 100%;
+            background: #fff9ef;
+            border-radius: 60px 40px 60px 40px;
+            padding: 30px 25px;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.4);
             color: #2e241f;
+            margin: 20px auto;                /* автоматические отступы по бокам и снизу */
+        }
+
+        .welcome-card h1 {
+            font-size: 2rem;
+            text-align: center;
+            color: #4a2e1e;
+            margin: 0 0 20px 0;
+            padding: 5px 0 5px 30px;
+            position: relative;
+            word-break: break-word;
+            line-height: 1.3;
+        }
+
+        /* Левая полоска */
+        .welcome-card h1::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 8px;
+            background: #ffc857;
+            border-radius: 4px;
+        }
+
+        .welcome-card h2 {
+            font-size: 1.4rem;
+            margin: 20px 0 10px;
+            color: #5d3a1f;
+        }
+        .welcome-card p {
+            font-size: 1rem;
+            line-height: 1.4;
+            margin-bottom: 12px;
+        }
+        .park-info {
+            background: #f0e2ca;
+            border-radius: 30px;
+            padding: 15px;
+            margin: 15px 0;
+            font-style: italic;
+        }
+        .btn-start {
+            background: #5f8b4c;
+            border: none;
+            width: 100%;
+            padding: 16px;
+            font-size: 1.4rem;
+            font-weight: bold;
+            border-radius: 60px;
+            color: white;
+            margin-top: 20px;
             cursor: pointer;
+            box-shadow: 0 4px 0 #2a4b1e;
+            transition: 0.05s linear;
+        }
+        .btn-start:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #2a4b1e;
+        }
+        .rules-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        .rules-list li {
+            margin: 12px 0;
+            padding-left: 28px;
+            position: relative;
+        }
+        .rules-list li:before {
+            content: "🧭";
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+
+        /* Мобильная адаптация */
+        @media (max-width: 550px) {
+            .welcome-screen {
+                padding: 15px 15px 30px;      /* чуть меньше отступы */
+            }
+            .welcome-card {
+                padding: 20px 18px;
+            }
+            .welcome-card h1 {
+                font-size: 1.6rem;
+                padding-left: 20px;
+            }
+            .welcome-card h1::before {
+                width: 6px;
+            }
+            .welcome-card h2 {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* ========= ОСНОВНОЙ ЭКРАН (AR) ========= */
+        .ar-container {
+            display: none;
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        .status-overlay {
+            position: fixed;
+            bottom: 100px;
+            left: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            color: #ffec9f;
+            text-align: center;
+            padding: 12px;
+            border-radius: 30px;
+            z-index: 300;
+            font-size: 0.9rem;
+            backdrop-filter: blur(5px);
+            pointer-events: none;
         }
         .toast {
             position: fixed;
@@ -60,48 +197,16 @@
             align-items: center;
             gap: 16px;
             z-index: 150;
-            transition: bottom 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            transition: bottom 0.3s;
             box-shadow: 0 8px 20px rgba(0,0,0,0.3);
             border-left: 6px solid #ffc857;
             border-right: 6px solid #ffc857;
             pointer-events: none;
         }
-        .toast.show {
-            bottom: 30px;
-        }
-        .toast-icon {
-            font-size: 48px;
-            background: #5d3a1f;
-            border-radius: 60px;
-            width: 60px;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        }
-        .toast-text {
-            flex: 1;
-            color: #ffec9f;
-            font-weight: bold;
-            font-size: 1rem;
-            line-height: 1.3;
-            text-shadow: 1px 1px 0 #2c1a0e;
-        }
-        .toast-close {
-            background: #bb8855;
-            border: none;
-            color: white;
-            font-weight: bold;
-            border-radius: 40px;
-            padding: 6px 12px;
-            cursor: pointer;
-            pointer-events: auto;
-            font-family: inherit;
-        }
-        @media (min-width: 600px) {
-            .toast { left: auto; right: auto; width: 500px; margin: 0 auto; }
-        }
+        .toast.show { bottom: 30px; }
+        .toast-icon { font-size: 48px; background: #5d3a1f; border-radius: 60px; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; }
+        .toast-text { flex: 1; color: #ffec9f; font-weight: bold; font-size: 1rem; }
+        .toast-close { background: #bb8855; border: none; color: white; border-radius: 40px; padding: 6px 12px; cursor: pointer; pointer-events: auto; }
         .floating-panel {
             position: fixed;
             bottom: 20px;
@@ -115,7 +220,6 @@
             justify-content: space-between;
             gap: 12px;
             z-index: 100;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             pointer-events: auto;
         }
         .floating-panel button {
@@ -125,12 +229,9 @@
             border-radius: 40px;
             font-weight: bold;
             color: white;
-            font-size: 1rem;
             flex: 1;
             cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
-        .floating-panel button:active { transform: scale(0.97); }
         .modal {
             display: none;
             position: fixed;
@@ -162,110 +263,65 @@
             color: white;
             font-weight: bold;
         }
-        @media (max-width: 600px) {
-            .floating-panel button { font-size: 0.8rem; padding: 8px 12px; }
-            .toast-icon { font-size: 36px; width: 50px; height: 50px; }
-            .toast-text { font-size: 0.85rem; }
-        }
     </style>
 </head>
 <body>
 
-<div id="arSceneWrapper" style="display: none;">
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;">
-        <!-- Маркеры те же самые (0-4) -->
-        <a-marker type="barcode" value="0">
-            <a-plane position="0 0.1 0" rotation="-90 0 0" width="1.8" height="2.0" color="#4a2e1e" opacity="0.85"></a-plane>
-            <a-image src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Ccircle cx='100' cy='100' r='90' fill='%23333'/%3E%3Ccircle cx='70' cy='80' r='12' fill='white'/%3E%3Ccircle cx='130' cy='80' r='12' fill='white'/%3E%3Ccircle cx='70' cy='80' r='5' fill='black'/%3E%3Ccircle cx='130' cy='80' r='5' fill='black'/%3E%3Cpolygon points='100,110 80,140 120,140' fill='%23ffaa33'/%3E%3Cpath d='M60 60 L40 30 L70 45 Z' fill='%23666'/%3E%3Cpath d='M140 60 L160 30 L130 45 Z' fill='%23666'/%3E%3Ctext x='100' y='180' font-size='24' text-anchor='middle' fill='white' font-weight='bold'%3E🐦‍⬛%3C/text%3E%3C/svg%3E" position="0 0.8 0" width="1.2" height="1.2"></a-image>
-            <a-text value="Найди букву у входа в избушку Бабы-Яги. Запиши её в заметки." align="center" position="0 -0.4 0" color="#ffec9f" scale="0.7 0.7 0.7" width="2.5"></a-text>
-        </a-marker>
-        <a-marker type="barcode" value="1">
-            <a-plane position="0 0.1 0" rotation="-90 0 0" width="1.8" height="2.0" color="#4a2e1e" opacity="0.85"></a-plane>
-            <a-image src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%232d6a4f'/%3E%3Ccircle cx='60' cy='80' r='25' fill='%234caf50'/%3E%3Ccircle cx='100' cy='70' r='28' fill='%234caf50'/%3E%3Ccircle cx='140' cy='80' r='25' fill='%234caf50'/%3E%3Ccircle cx='60' cy='70' r='6' fill='black'/%3E%3Ccircle cx='100' cy='60' r='6' fill='black'/%3E%3Ccircle cx='140' cy='70' r='6' fill='black'/%3E%3Cpath d='M90 110 L100 140 L110 110 Z' fill='%23d32f2f'/%3E%3Cpath d='M50 110 L60 140 L70 110 Z' fill='%23d32f2f'/%3E%3Cpath d='M130 110 L140 140 L150 110 Z' fill='%23d32f2f'/%3E%3Ctext x='100' y='180' font-size='28' text-anchor='middle' fill='white'%3E🐉%3C/text%3E%3C/svg%3E" position="0 0.8 0" width="1.2" height="1.2"></a-image>
-            <a-text value="Посчитай камни с трещиной перед средней головой. Запиши цифру." align="center" position="0 -0.4 0" color="#ffec9f" scale="0.7 0.7 0.7" width="2.5"></a-text>
-        </a-marker>
-        <a-marker type="barcode" value="2">
-            <a-plane position="0 0.1 0" rotation="-90 0 0" width="1.8" height="2.0" color="#4a2e1e" opacity="0.85"></a-plane>
-            <a-image src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%238b5a2b'/%3E%3Ccircle cx='100' cy='90' r='45' fill='%23deb887'/%3E%3Ccircle cx='75' cy='80' r='8' fill='white'/%3E%3Ccircle cx='125' cy='80' r='8' fill='white'/%3E%3Ccircle cx='75' cy='80' r='4' fill='black'/%3E%3Ccircle cx='125' cy='80' r='4' fill='black'/%3E%3Cpath d='M90 110 Q100 130 110 110 Z' fill='%238b4513'/%3E%3Crect x='70' y='130' width='60' height='20' fill='%235d3a1a'/%3E%3Ctext x='100' y='180' font-size='30' text-anchor='middle' fill='white'%3E🪵%3C/text%3E%3C/svg%3E" position="0 0.8 0" width="1.2" height="1.2"></a-image>
-            <a-text value="Под лавочкой вырезана буква на доске. Найди её и запиши." align="center" position="0 -0.4 0" color="#ffec9f" scale="0.7 0.7 0.7" width="2.5"></a-text>
-        </a-marker>
-        <a-marker type="barcode" value="3">
-            <a-plane position="0 0.1 0" rotation="-90 0 0" width="1.8" height="2.0" color="#4a2e1e" opacity="0.85"></a-plane>
-            <a-image src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%232e7d32'/%3E%3Ccircle cx='100' cy='85' r='40' fill='%2371c837'/%3E%3Ccircle cx='75' cy='75' r='7' fill='white'/%3E%3Ccircle cx='125' cy='75' r='7' fill='white'/%3E%3Ccircle cx='75' cy='75' r='3' fill='black'/%3E%3Ccircle cx='125' cy='75' r='3' fill='black'/%3E%3Cpath d='M90 100 L100 125 L110 100 Z' fill='%234caf50'/%3E%3Cpath d='M60 50 L80 30 L90 55 Z' fill='%231b5e20'/%3E%3Cpath d='M140 50 L120 30 L110 55 Z' fill='%231b5e20'/%3E%3Ctext x='100' y='175' font-size='32' text-anchor='middle' fill='white'%3E🌿%3C/text%3E%3C/svg%3E" position="0 0.8 0" width="1.2" height="1.2"></a-image>
-            <a-text value="Сосчитай красные ленточки с бантиками на дубе. Это цифра." align="center" position="0 -0.4 0" color="#ffec9f" scale="0.7 0.7 0.7" width="2.5"></a-text>
-        </a-marker>
-        <a-marker type="barcode" value="4">
-            <a-plane position="0 0.1 0" rotation="-90 0 0" width="1.8" height="2.0" color="#4a2e1e" opacity="0.85"></a-plane>
-            <a-image src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%235d3a1a'/%3E%3Ccircle cx='100' cy='90' r='45' fill='%23d2b48c'/%3E%3Ccircle cx='70' cy='80' r='9' fill='white'/%3E%3Ccircle cx='130' cy='80' r='9' fill='white'/%3E%3Ccircle cx='70' cy='80' r='5' fill='black'/%3E%3Ccircle cx='130' cy='80' r='5' fill='black'/%3E%3Cpath d='M85 115 L100 135 L115 115 Z' fill='%238b0000'/%3E%3Crect x='65' y='140' width='70' height='15' fill='%23654321'/%3E%3Cpath d='M140 70 L170 50 L155 80 Z' fill='%23654321'/%3E%3Ctext x='100' y='185' font-size='30' text-anchor='middle' fill='white'%3E🧹%3C/text%3E%3C/svg%3E" position="0 0.8 0" width="1.2" height="1.2"></a-image>
-            <a-text value="На черенке метлы – последняя буква слова 'ЯГА'. Запиши её." align="center" position="0 -0.4 0" color="#ffec9f" scale="0.7 0.7 0.7" width="2.5"></a-text>
-        </a-marker>
-        <a-entity camera></a-entity>
-    </a-scene>
-</div>
+<!-- ПРИВЕТСТВЕННАЯ СТРАНИЦА (ТЕПЕРЬ ЛИСТАЕТСЯ) -->
+<div id="welcomeScreen" class="welcome-screen">
+    <div class="welcome-card">
+        <h1>🍂 Тайный советник 🍄</h1>
+        <p>Добро пожаловать в <strong>парк «Сказов»</strong>! Вы готовы стать настоящим следопытом?</p>
+        
+        <h2>🌲 Что вас ждёт</h2>
+        <ul class="rules-list">
+            <li>Найдите <strong>5 чёрно-белых маркеров</strong> по всему парку (на домиках, лавочках, камнях, дубе и метле).</li>
+            <li>Наведите камеру на маркер — прямо на экране появится сказочный герой и задание.</li>
+            <li>Ищите буквы и цифры в реальных местах парка (у избушки, на камнях, под лавочкой и т.д.).</li>
+            <li>Записывайте их в «Блокнот советника» (кнопка внизу).</li>
+            <li>Соберите все 5 символов в правильном порядке и введите код на вкладке «Ввести код».</li>
+            <li>Получите приз у администратора в шатре «Тайный советник»!</li>
+        </ul>
 
-<div id="taskToast" class="toast">
-    <div class="toast-icon" id="toastIcon">🐦‍⬛</div>
-    <div class="toast-text" id="toastText">Найди букву у входа в избушку Бабы-Яги. Запиши её в заметки.</div>
-    <button class="toast-close" id="closeToast">✖</button>
-</div>
+        <h2>🏰 О парке «Сказов»</h2>
+        <div class="park-info">
+            <p>📍 <strong>Парк «Сказов»</strong> — это уникальное место, где оживают герои русских народных сказок. Здесь вы встретите избушку Бабы-Яги, Змея Горыныча с камнями, дуб с ленточками Лешего и многое другое.</p>
+            <p>✨ Официальный сайт: <a href="https://parkskazov.ru/" target="_blank">parkskazov.ru</a></p>
+            <p>🌳 В парке есть кафе, детские площадки и аттракционы. Приятного путешествия!</p>
+        </div>
 
-<div class="floating-panel">
-    <button id="notesBtn">📔 МОИ ЗАМЕТКИ</button>
-    <button id="codeBtn">🔐 ВВЕСТИ КОД</button>
-</div>
-
-<div id="modal" class="modal">
-    <div class="modal-content">
-        <div id="modalBody"></div>
-        <button class="close-modal" id="closeModal">ЗАКРЫТЬ</button>
+        <button id="startQuestBtn" class="btn-start">🔍 НАЧАТЬ КВЕСТ 🔍</button>
+        <p style="font-size: 0.75rem; text-align: center; margin-top: 15px;">* Для работы потребуется доступ к камере</p>
     </div>
 </div>
 
+<!-- ОСНОВНОЙ КОНТЕЙНЕР ДЛЯ AR (изначально скрыт) -->
+<div id="arContainer" class="ar-container"></div>
+
+<!-- ТАБЛЕТКА И ПАНЕЛИ (тоже скрыты до старта) -->
+<div id="toastAndPanels" style="display: none;">
+    <div id="taskToast" class="toast">
+        <div class="toast-icon" id="toastIcon">🐦‍⬛</div>
+        <div class="toast-text" id="toastText">Найди букву у входа в избушку Бабы-Яги</div>
+        <button class="toast-close" id="closeToast">✖</button>
+    </div>
+
+    <div class="floating-panel">
+        <button id="notesBtn">📔 МОИ ЗАМЕТКИ</button>
+        <button id="codeBtn">🔐 ВВЕСТИ КОД</button>
+    </div>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div id="modalBody"></div>
+            <button class="close-modal" id="closeModal">ЗАКРЫТЬ</button>
+        </div>
+    </div>
+    <div id="statusMsg" class="status-overlay">🔍 Запрос доступа к камере...</div>
+</div>
+
 <script>
-    // Проверка загрузки библиотек
-    function checkLibraries() {
-        if (typeof AFRAME === 'undefined') {
-            alert('❌ Не удалось загрузить библиотеку A-Frame. Проверьте интернет-соединение и попробуйте перезагрузить страницу.');
-            return false;
-        }
-        if (typeof THREEx === 'undefined' && typeof ARjs === 'undefined') {
-            console.warn('AR.js может быть не загружен');
-        }
-        return true;
-    }
-
-    // Проверка камеры
-    async function requestCameraAccess() {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-            stream.getTracks().forEach(track => track.stop());
-            return true;
-        } catch (err) {
-            console.error('Camera error:', err);
-            return false;
-        }
-    }
-
-    (async function init() {
-        const libsOk = checkLibraries();
-        const hasCamera = await requestCameraAccess();
-        const wrapper = document.getElementById('arSceneWrapper');
-        if (libsOk && hasCamera) {
-            wrapper.style.display = 'block';
-        } else {
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'camera-error';
-            errorDiv.innerHTML = `
-                <div>📷❌ ${!libsOk ? 'ОШИБКА ЗАГРУЗКИ БИБЛИОТЕК' : 'НЕТ ДОСТУПА К КАМЕРЕ'}</div>
-                <div>${!libsOk ? 'Проверьте интернет и перезагрузите страницу.' : 'Пожалуйста, разрешите доступ к камере и перезагрузите страницу.'}</div>
-                <button id="reloadBtn">🔄 ПЕРЕЗАГРУЗИТЬ</button>
-            `;
-            document.body.appendChild(errorDiv);
-            document.getElementById('reloadBtn')?.addEventListener('click', () => location.reload());
-        }
-    })();
-
-    // Таблетка
+    // ---------- ФУНКЦИИ КВЕСТА (заметки, код, таблетка) ----------
     const tasks = {
         "0": { icon: "🐦‍⬛", text: "Найди букву у входа в избушку Бабы-Яги. Запиши её в заметки." },
         "1": { icon: "🐉", text: "Посчитай камни с трещиной перед средней головой. Запиши цифру." },
@@ -273,33 +329,9 @@
         "3": { icon: "🌿", text: "Сосчитай красные ленточки с бантиками на дубе. Это цифра." },
         "4": { icon: "🧹", text: "На черенке метлы – последняя буква слова 'ЯГА'. Запиши её." }
     };
-    const toast = document.getElementById('taskToast');
-    const toastIcon = document.getElementById('toastIcon');
-    const toastText = document.getElementById('toastText');
-    const closeToastBtn = document.getElementById('closeToast');
-    let toastTimeout;
-    function showToast(markerValue) {
-        const task = tasks[markerValue];
-        if (!task) return;
-        toastIcon.innerHTML = task.icon;
-        toastText.innerHTML = task.text;
-        toast.classList.add('show');
-        if (toastTimeout) clearTimeout(toastTimeout);
-        toastTimeout = setTimeout(() => toast.classList.remove('show'), 5000);
-    }
-    function hideToast() { toast.classList.remove('show'); if (toastTimeout) clearTimeout(toastTimeout); }
-    closeToastBtn.addEventListener('click', hideToast);
-    window.addEventListener('load', () => {
-        setTimeout(() => {
-            document.querySelectorAll('a-marker').forEach(marker => {
-                marker.addEventListener('markerFound', () => showToast(marker.getAttribute('value')));
-            });
-        }, 2000);
-    });
-
-    // Заметки и код
     const CORRECT_CODE = "В4К2А";
     let notesField, saveNotesBtn, codeInput, checkBtn, resultDiv, resetBtn;
+
     function buildNotesUI() {
         return `<h3>📔 Блокнот советника</h3><p>Записывай найденные символы по порядку (буква, цифра, буква, цифра, буква).</p><textarea id="notesField" rows="4" style="width:100%; padding:10px; border-radius:20px; margin:10px 0;"></textarea><button id="saveNotesBtn" style="background:#b3864a; color:white; border:none; padding:10px 20px; border-radius:40px; font-weight:bold;">💾 Сохранить заметки</button>`;
     }
@@ -316,10 +348,137 @@
         else{ modalBody.innerHTML=buildCodeUI(); codeInput=document.getElementById('codeInput'); checkBtn=document.getElementById('checkCodeBtn'); resetBtn=document.getElementById('resetGameBtn'); if(checkBtn) checkBtn.addEventListener('click',checkCode); if(resetBtn) resetBtn.addEventListener('click',resetGame); }
         modal.style.display='flex';
     }
-    document.getElementById('notesBtn').addEventListener('click',()=>showModal('notes'));
-    document.getElementById('codeBtn').addEventListener('click',()=>showModal('code'));
-    document.getElementById('closeModal').addEventListener('click',()=>document.getElementById('modal').style.display='none');
-    window.addEventListener('load',()=>{ if(!localStorage.getItem('ar_quest_shown') && document.getElementById('arSceneWrapper').style.display==='block'){ alert('🔍 ТАЙНЫЙ СОВЕТНИК\n\nНаведи камеру на чёрно-белые маркеры. При сканировании снизу появится задание. Записывай символы в заметки и собери код!'); localStorage.setItem('ar_quest_shown','true'); } });
+
+    // Таблетка
+    let toast, toastIcon, toastText, closeToastBtn, toastTimeout;
+    function initToast() {
+        toast = document.getElementById('taskToast');
+        toastIcon = document.getElementById('toastIcon');
+        toastText = document.getElementById('toastText');
+        closeToastBtn = document.getElementById('closeToast');
+        if (closeToastBtn) closeToastBtn.addEventListener('click', () => toast.classList.remove('show'));
+    }
+    function showToast(markerValue) {
+        if (!toast) return;
+        const task = tasks[markerValue];
+        if (!task) return;
+        toastIcon.innerHTML = task.icon;
+        toastText.innerHTML = task.text;
+        toast.classList.add('show');
+        if (toastTimeout) clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => toast.classList.remove('show'), 5000);
+    }
+
+    // ---------- AR ЗАПУСК (динамическое создание сцены) ----------
+    async function getCameraStream() {
+        try {
+            const constraints = {
+                video: {
+                    facingMode: { exact: "environment" },
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                }
+            };
+            const stream = await navigator.mediaDevices.getUserMedia(constraints);
+            return stream;
+        } catch (err) {
+            console.warn("Тыловая камера не найдена, пробуем любую", err);
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                return stream;
+            } catch (err2) {
+                throw new Error("Камера не доступна: " + err2.message);
+            }
+        }
+    }
+
+    async function initAR() {
+        const statusDiv = document.getElementById('statusMsg');
+        statusDiv.style.display = 'block';
+        statusDiv.innerText = "📷 Запрос доступа к камере...";
+        try {
+            const stream = await getCameraStream();
+            statusDiv.innerText = "📷 Камера получена, запускаем AR...";
+            
+            const videoElement = document.createElement('video');
+            videoElement.srcObject = stream;
+            videoElement.autoplay = true;
+            videoElement.muted = true;
+            videoElement.playsInline = true;
+            await videoElement.play();
+            
+            const scene = document.createElement('a-scene');
+            scene.setAttribute('embedded', '');
+            scene.setAttribute('arjs', 'sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;');
+            
+            // Маркеры (все 5)
+            scene.innerHTML = `
+                <a-marker type="barcode" value="0">
+                    <a-plane position="0 0.1 0" rotation="-90 0 0" width="1.8" height="2.0" color="#4a2e1e" opacity="0.85"></a-plane>
+                    <a-image src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Ccircle cx='100' cy='100' r='90' fill='%23333'/%3E%3Ccircle cx='70' cy='80' r='12' fill='white'/%3E%3Ccircle cx='130' cy='80' r='12' fill='white'/%3E%3Ccircle cx='70' cy='80' r='5' fill='black'/%3E%3Ccircle cx='130' cy='80' r='5' fill='black'/%3E%3Cpolygon points='100,110 80,140 120,140' fill='%23ffaa33'/%3E%3Cpath d='M60 60 L40 30 L70 45 Z' fill='%23666'/%3E%3Cpath d='M140 60 L160 30 L130 45 Z' fill='%23666'/%3E%3Ctext x='100' y='180' font-size='24' text-anchor='middle' fill='white' font-weight='bold'%3E🐦‍⬛%3C/text%3E%3C/svg%3E" position="0 0.8 0" width="1.2" height="1.2"></a-image>
+                    <a-text value="Найди букву у входа в избушку Бабы-Яги. Запиши её в заметки." align="center" position="0 -0.4 0" color="#ffec9f" scale="0.7 0.7 0.7" width="2.5"></a-text>
+                </a-marker>
+                <a-marker type="barcode" value="1">
+                    <a-plane position="0 0.1 0" rotation="-90 0 0" width="1.8" height="2.0" color="#4a2e1e" opacity="0.85"></a-plane>
+                    <a-image src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%232d6a4f'/%3E%3Ccircle cx='60' cy='80' r='25' fill='%234caf50'/%3E%3Ccircle cx='100' cy='70' r='28' fill='%234caf50'/%3E%3Ccircle cx='140' cy='80' r='25' fill='%234caf50'/%3E%3Ccircle cx='60' cy='70' r='6' fill='black'/%3E%3Ccircle cx='100' cy='60' r='6' fill='black'/%3E%3Ccircle cx='140' cy='70' r='6' fill='black'/%3E%3Cpath d='M90 110 L100 140 L110 110 Z' fill='%23d32f2f'/%3E%3Cpath d='M50 110 L60 140 L70 110 Z' fill='%23d32f2f'/%3E%3Cpath d='M130 110 L140 140 L150 110 Z' fill='%23d32f2f'/%3E%3Ctext x='100' y='180' font-size='28' text-anchor='middle' fill='white'%3E🐉%3C/text%3E%3C/svg%3E" position="0 0.8 0" width="1.2" height="1.2"></a-image>
+                    <a-text value="Посчитай камни с трещиной перед средней головой. Запиши цифру." align="center" position="0 -0.4 0" color="#ffec9f" scale="0.7 0.7 0.7" width="2.5"></a-text>
+                </a-marker>
+                <a-marker type="barcode" value="2">
+                    <a-plane position="0 0.1 0" rotation="-90 0 0" width="1.8" height="2.0" color="#4a2e1e" opacity="0.85"></a-plane>
+                    <a-image src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%238b5a2b'/%3E%3Ccircle cx='100' cy='90' r='45' fill='%23deb887'/%3E%3Ccircle cx='75' cy='80' r='8' fill='white'/%3E%3Ccircle cx='125' cy='80' r='8' fill='white'/%3E%3Ccircle cx='75' cy='80' r='4' fill='black'/%3E%3Ccircle cx='125' cy='80' r='4' fill='black'/%3E%3Cpath d='M90 110 Q100 130 110 110 Z' fill='%238b4513'/%3E%3Crect x='70' y='130' width='60' height='20' fill='%235d3a1a'/%3E%3Ctext x='100' y='180' font-size='30' text-anchor='middle' fill='white'%3E🪵%3C/text%3E%3C/svg%3E" position="0 0.8 0" width="1.2" height="1.2"></a-image>
+                    <a-text value="Под лавочкой вырезана буква на доске. Найди её и запиши." align="center" position="0 -0.4 0" color="#ffec9f" scale="0.7 0.7 0.7" width="2.5"></a-text>
+                </a-marker>
+                <a-marker type="barcode" value="3">
+                    <a-plane position="0 0.1 0" rotation="-90 0 0" width="1.8" height="2.0" color="#4a2e1e" opacity="0.85"></a-plane>
+                    <a-image src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%232e7d32'/%3E%3Ccircle cx='100' cy='85' r='40' fill='%2371c837'/%3E%3Ccircle cx='75' cy='75' r='7' fill='white'/%3E%3Ccircle cx='125' cy='75' r='7' fill='white'/%3E%3Ccircle cx='75' cy='75' r='3' fill='black'/%3E%3Ccircle cx='125' cy='75' r='3' fill='black'/%3E%3Cpath d='M90 100 L100 125 L110 100 Z' fill='%234caf50'/%3E%3Cpath d='M60 50 L80 30 L90 55 Z' fill='%231b5e20'/%3E%3Cpath d='M140 50 L120 30 L110 55 Z' fill='%231b5e20'/%3E%3Ctext x='100' y='175' font-size='32' text-anchor='middle' fill='white'%3E🌿%3C/text%3E%3C/svg%3E" position="0 0.8 0" width="1.2" height="1.2"></a-image>
+                    <a-text value="Сосчитай красные ленточки с бантиками на дубе. Это цифра." align="center" position="0 -0.4 0" color="#ffec9f" scale="0.7 0.7 0.7" width="2.5"></a-text>
+                </a-marker>
+                <a-marker type="barcode" value="4">
+                    <a-plane position="0 0.1 0" rotation="-90 0 0" width="1.8" height="2.0" color="#4a2e1e" opacity="0.85"></a-plane>
+                    <a-image src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%235d3a1a'/%3E%3Ccircle cx='100' cy='90' r='45' fill='%23d2b48c'/%3E%3Ccircle cx='70' cy='80' r='9' fill='white'/%3E%3Ccircle cx='130' cy='80' r='9' fill='white'/%3E%3Ccircle cx='70' cy='80' r='5' fill='black'/%3E%3Ccircle cx='130' cy='80' r='5' fill='black'/%3E%3Cpath d='M85 115 L100 135 L115 115 Z' fill='%238b0000'/%3E%3Crect x='65' y='140' width='70' height='15' fill='%23654321'/%3E%3Cpath d='M140 70 L170 50 L155 80 Z' fill='%23654321'/%3E%3Ctext x='100' y='185' font-size='30' text-anchor='middle' fill='white'%3E🧹%3C/text%3E%3C/svg%3E" position="0 0.8 0" width="1.2" height="1.2"></a-image>
+                    <a-text value="На черенке метлы – последняя буква слова 'ЯГА'. Запиши её." align="center" position="0 -0.4 0" color="#ffec9f" scale="0.7 0.7 0.7" width="2.5"></a-text>
+                </a-marker>
+                <a-entity camera></a-entity>
+            `;
+            
+            scene.addEventListener('loaded', () => {
+                const arCamera = scene.querySelector('a-camera');
+                if (arCamera && arCamera.components && arCamera.components.material) {
+                    const mat = arCamera.components.material;
+                    if (mat.material && mat.material.map) {
+                        mat.material.map.image.srcObject = stream;
+                    }
+                }
+                setTimeout(() => {
+                    const markers = scene.querySelectorAll('a-marker');
+                    markers.forEach(m => {
+                        m.addEventListener('markerFound', () => {
+                            const val = m.getAttribute('value');
+                            showToast(val);
+                        });
+                    });
+                }, 1000);
+                statusDiv.style.display = 'none';
+            });
+            
+            document.getElementById('arContainer').appendChild(scene);
+        } catch (err) {
+            statusDiv.innerText = "❌ Ошибка: " + err.message;
+            console.error(err);
+        }
+    }
+
+    // ---------- ЗАПУСК ПОСЛЕ НАЖАТИЯ КНОПКИ ----------
+    document.getElementById('startQuestBtn').addEventListener('click', async () => {
+        document.getElementById('welcomeScreen').style.display = 'none';
+        document.getElementById('arContainer').style.display = 'block';
+        document.getElementById('toastAndPanels').style.display = 'block';
+        initToast();
+        document.getElementById('notesBtn').addEventListener('click', () => showModal('notes'));
+        document.getElementById('codeBtn').addEventListener('click', () => showModal('code'));
+        document.getElementById('closeModal').addEventListener('click', () => document.getElementById('modal').style.display = 'none');
+        await initAR();
+    });
 </script>
 </body>
 </html>
