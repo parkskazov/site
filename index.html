@@ -7,14 +7,24 @@
     <!-- Локальные библиотеки (лежат рядом) -->
     <script src="./aframe.min.js"></script>
     <script src="./aframe-ar.js"></script>
+    <!-- Подключаем шрифт Montserrat -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <style>
+        /* СБРОС */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
         body {
-            font-family: 'Segoe UI', 'Comic Neue', 'Comic Sans MS', cursive;
+            font-family: 'Montserrat', sans-serif;
             background: #1a472a;
             color: #f9f2cf;
         }
@@ -29,14 +39,23 @@
             background: linear-gradient(135deg, #1e4a2f 0%, #0e2a1a 100%);
             z-index: 1000;
             overflow-y: auto;
-            padding: 30px 20px 40px;
+            padding: 20px 20px 40px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
+            box-sizing: border-box;
         }
+        @supports (padding-top: constant(safe-area-inset-top)) {
+            .welcome-screen { padding-top: calc(20px + constant(safe-area-inset-top)); }
+        }
+        @supports (padding-top: env(safe-area-inset-top)) {
+            .welcome-screen { padding-top: calc(20px + env(safe-area-inset-top)); }
+        }
+
         .welcome-card {
             max-width: 550px;
+            width: 100%;
             background: #fff9ef;
             border-radius: 60px 40px 60px 40px;
             padding: 30px 25px;
@@ -48,21 +67,24 @@
             font-size: 2rem;
             text-align: center;
             color: #4a2e1e;
-            border-left: 8px solid #ffc857;
-            padding-left: 20px;
-            margin-bottom: 20px;
+            margin: 0 0 20px 0;
+            padding: 5px 0 5px 30px;
+            position: relative;
             word-break: break-word;
+            line-height: 1.3;
         }
-        .welcome-card h2 {
-            font-size: 1.4rem;
-            margin: 20px 0 10px;
-            color: #5d3a1f;
+        .welcome-card h1::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 8px;
+            background: #ffc857;
+            border-radius: 4px;
         }
-        .welcome-card p {
-            font-size: 1rem;
-            line-height: 1.4;
-            margin-bottom: 12px;
-        }
+        .welcome-card h2 { font-size: 1.4rem; margin: 20px 0 10px; color: #5d3a1f; }
+        .welcome-card p { font-size: 1rem; line-height: 1.4; margin-bottom: 12px; }
         .park-info {
             background: #f0e2ca;
             border-radius: 30px;
@@ -84,45 +106,21 @@
             box-shadow: 0 4px 0 #2a4b1e;
             transition: 0.05s linear;
         }
-        .btn-start:active {
-            transform: translateY(2px);
-            box-shadow: 0 2px 0 #2a4b1e;
-        }
-        .rules-list {
-            list-style: none;
-            padding-left: 0;
-        }
-        .rules-list li {
-            margin: 12px 0;
-            padding-left: 28px;
-            position: relative;
-        }
-        .rules-list li:before {
-            content: "🧭";
-            position: absolute;
-            left: 0;
-            top: 0;
-        }
+        .btn-start:active { transform: translateY(2px); box-shadow: 0 2px 0 #2a4b1e; }
+        .rules-list { list-style: none; padding-left: 0; }
+        .rules-list li { margin: 12px 0; padding-left: 28px; position: relative; }
+        .rules-list li:before { content: "🧭"; position: absolute; left: 0; top: 0; }
+
         @media (max-width: 550px) {
-            .welcome-card {
-                padding: 20px 18px;
-            }
-            .welcome-card h1 {
-                font-size: 1.6rem;
-                padding-left: 15px;
-            }
-            .welcome-card h2 {
-                font-size: 1.2rem;
-            }
+            .welcome-screen { padding: 15px 15px 30px; }
+            .welcome-card { padding: 20px 18px; }
+            .welcome-card h1 { font-size: 1.6rem; padding-left: 20px; }
+            .welcome-card h1::before { width: 6px; }
+            .welcome-card h2 { font-size: 1.2rem; }
         }
 
         /* ========= ОСНОВНОЙ ЭКРАН (AR) ========= */
-        .ar-container {
-            display: none;
-            width: 100%;
-            height: 100%;
-            position: relative;
-        }
+        .ar-container { display: none; width: 100%; height: 100%; position: relative; }
         .status-overlay {
             position: fixed;
             bottom: 100px;
@@ -217,6 +215,13 @@
             color: white;
             font-weight: bold;
         }
+
+        /* Дополнительный стиль для сообщений проверки */
+        .result-message {
+            border-radius: 20px;
+            padding: 12px;
+            margin-top: 12px;
+        }
     </style>
 </head>
 <body>
@@ -249,10 +254,10 @@
     </div>
 </div>
 
-<!-- ОСНОВНОЙ КОНТЕЙНЕР ДЛЯ AR (изначально скрыт) -->
+<!-- ОСНОВНОЙ КОНТЕЙНЕР ДЛЯ AR -->
 <div id="arContainer" class="ar-container"></div>
 
-<!-- ТАБЛЕТКА И ПАНЕЛИ (тоже скрыты до старта) -->
+<!-- ТАБЛЕТКА И ПАНЕЛИ -->
 <div id="toastAndPanels" style="display: none;">
     <div id="taskToast" class="toast">
         <div class="toast-icon" id="toastIcon">🐦‍⬛</div>
@@ -275,7 +280,7 @@
 </div>
 
 <script>
-    // ---------- ФУНКЦИИ КВЕСТА (заметки, код, таблетка) ----------
+    // ---------- ДАННЫЕ КВЕСТА ----------
     const tasks = {
         "0": { icon: "🐦‍⬛", text: "Найди букву у входа в избушку Бабы-Яги. Запиши её в заметки." },
         "1": { icon: "🐉", text: "Посчитай камни с трещиной перед средней головой. Запиши цифру." },
@@ -284,22 +289,80 @@
         "4": { icon: "🧹", text: "На черенке метлы – последняя буква слова 'ЯГА'. Запиши её." }
     };
     const CORRECT_CODE = "В4К2А";
-    let notesField, saveNotesBtn, codeInput, checkBtn, resultDiv, resetBtn;
+    let notesField, saveNotesBtn, codeInput, checkBtn, resetBtn;
 
     function buildNotesUI() {
-        return `<h3>📔 Блокнот советника</h3><p>Записывай найденные символы по порядку (буква, цифра, буква, цифра, буква).</p><textarea id="notesField" rows="4" style="width:100%; padding:10px; border-radius:20px; margin:10px 0;"></textarea><button id="saveNotesBtn" style="background:#b3864a; color:white; border:none; padding:10px 20px; border-radius:40px; font-weight:bold;">💾 Сохранить заметки</button>`;
+        return `<h3>📔 Блокнот советника</h3><p>Записывай найденные символы по порядку (буква, цифра, буква, цифра, буква).</p>
+        <textarea id="notesField" rows="4" style="width:100%; padding:10px; border-radius:20px; margin:10px 0;"></textarea>
+        <button id="saveNotesBtn" style="background:#b3864a; color:white; border:none; padding:10px 20px; border-radius:40px; font-weight:bold;">💾 Сохранить заметки</button>`;
     }
     function buildCodeUI() {
-        return `<h3>🔓 Введи волшебный шифр</h3><p>Введи 5 символов (Ворон→Горыныч→Домовой→Леший→Яга)</p><input type="text" id="codeInput" maxlength="5" style="width:100%; padding:12px; font-size:1.5rem; text-align:center; text-transform:uppercase; border-radius:60px; border:2px solid #e4b363; margin:10px 0;"><button id="checkCodeBtn" style="background:#5f8b4c; color:white; border:none; padding:10px 20px; border-radius:40px; font-weight:bold;">✨ Открыть тайну ✨</button><div id="resultMessage" style="background:#eadbbe; border-radius:20px; padding:12px; margin-top:12px;">👻 Здесь появится ответ...</div><button id="resetGameBtn" style="background:#bb8855; color:white; border:none; padding:10px 20px; border-radius:40px; margin-top:12px;">🔄 Начать заново</button>`;
+        return `<h3>🔓 Введи волшебный шифр</h3><p>Введи 5 символов (Ворон→Горыныч→Домовой→Леший→Яга)</p>
+        <input type="text" id="codeInput" maxlength="5" style="width:100%; padding:12px; font-size:1.5rem; text-align:center; text-transform:uppercase; border-radius:60px; border:2px solid #e4b363; margin:10px 0;">
+        <button id="checkCodeBtn" style="background:#5f8b4c; color:white; border:none; padding:10px 20px; border-radius:40px; font-weight:bold;">✨ Открыть тайну ✨</button>
+        <div id="resultMessage" class="result-message" style="background:#eadbbe;">👻 Здесь появится ответ...</div>
+        <button id="resetGameBtn" style="background:#bb8855; color:white; border:none; padding:10px 20px; border-radius:40px; margin-top:12px;">🔄 Начать заново</button>`;
     }
-    function loadNotes() { const saved = localStorage.getItem('taimny_sovetnik_notes'); if (saved && notesField) notesField.value = saved; else if (notesField) notesField.value = ""; }
-    function saveNotes() { if (!notesField) return; localStorage.setItem('taimny_sovetnik_notes', notesField.value); const btn = document.getElementById('saveNotesBtn'); if(btn){ const orig=btn.innerText; btn.innerText='✅ Сохранено!'; setTimeout(()=>btn.innerText=orig,800); } }
-    function resetGame() { localStorage.removeItem('taimny_sovetnik_notes'); if(notesField) notesField.value=""; if(codeInput) codeInput.value=""; const rd=document.getElementById('resultMessage'); if(rd){ rd.innerHTML="🧹 Советник всё стёр. Начинай сначала!"; rd.style.background="#eadbbe"; } }
-    function checkCode() { if(!codeInput) return; const uc=codeInput.value.trim().toUpperCase(); const rd=document.getElementById('resultMessage'); if(uc===CORRECT_CODE){ rd.innerHTML="🎉✨ ПОЗДРАВЛЯЕМ! ✨🎉<br><br>⭐ Ты настоящий следопыт! ⭐<br><br>🏆 Беги к шатру «Тайный советник» за призом!"; rd.style.background="#c8e6b5"; } else { rd.innerHTML="🌿 Ошибка! Проверь порядок и символы. Вернись к первому маркеру (Ворон). 🌿<br><br>🌟 У тебя получится!"; rd.style.background="#f5ddc6"; } }
+
+    function loadNotes() {
+        const saved = localStorage.getItem('taimny_sovetnik_notes');
+        if (saved && notesField) notesField.value = saved;
+        else if (notesField) notesField.value = "";
+    }
+    function saveNotes() {
+        if (!notesField) return;
+        localStorage.setItem('taimny_sovetnik_notes', notesField.value);
+        const btn = document.getElementById('saveNotesBtn');
+        if(btn) {
+            const orig = btn.innerText;
+            btn.innerText = '✅ Сохранено!';
+            setTimeout(() => btn.innerText = orig, 800);
+        }
+    }
+    function resetGame() {
+        localStorage.removeItem('taimny_sovetnik_notes');
+        if(notesField) notesField.value = "";
+        if(codeInput) codeInput.value = "";
+        const rd = document.getElementById('resultMessage');
+        if(rd) {
+            rd.innerHTML = "🧹 Советник всё стёр. Начинай сначала!";
+            rd.style.background = "#eadbbe";
+            rd.style.color = "inherit";
+        }
+    }
+    function checkCode() {
+        if(!codeInput) return;
+        const uc = codeInput.value.trim().toUpperCase();
+        const rd = document.getElementById('resultMessage');
+        if(uc === CORRECT_CODE) {
+            // Зелёный фон
+            rd.innerHTML = "🎉✨ ПОЗДРАВЛЯЕМ! ✨🎉<br><br>⭐ Ты настоящий следопыт! ⭐<br><br>🏆 Беги к шатру «Тайный советник» за призом!";
+            rd.style.background = "#4caf50";  // яркий зелёный
+            rd.style.color = "white";
+        } else {
+            // Красный фон
+            rd.innerHTML = "🌿 Ошибка! Проверь порядок и символы. Вернись к первому маркеру (Ворон). 🌿<br><br>🌟 У тебя получится!";
+            rd.style.background = "#e53935";  // яркий красный
+            rd.style.color = "white";
+        }
+    }
+
     function showModal(type){
         const modal=document.getElementById('modal'), modalBody=document.getElementById('modalBody');
-        if(type==='notes'){ modalBody.innerHTML=buildNotesUI(); notesField=document.getElementById('notesField'); saveNotesBtn=document.getElementById('saveNotesBtn'); loadNotes(); if(saveNotesBtn) saveNotesBtn.addEventListener('click',saveNotes); }
-        else{ modalBody.innerHTML=buildCodeUI(); codeInput=document.getElementById('codeInput'); checkBtn=document.getElementById('checkCodeBtn'); resetBtn=document.getElementById('resetGameBtn'); if(checkBtn) checkBtn.addEventListener('click',checkCode); if(resetBtn) resetBtn.addEventListener('click',resetGame); }
+        if(type==='notes'){
+            modalBody.innerHTML = buildNotesUI();
+            notesField = document.getElementById('notesField');
+            saveNotesBtn = document.getElementById('saveNotesBtn');
+            loadNotes();
+            if(saveNotesBtn) saveNotesBtn.addEventListener('click', saveNotes);
+        } else {
+            modalBody.innerHTML = buildCodeUI();
+            codeInput = document.getElementById('codeInput');
+            checkBtn = document.getElementById('checkCodeBtn');
+            resetBtn = document.getElementById('resetGameBtn');
+            if(checkBtn) checkBtn.addEventListener('click', checkCode);
+            if(resetBtn) resetBtn.addEventListener('click', resetGame);
+        }
         modal.style.display='flex';
     }
 
@@ -323,7 +386,7 @@
         toastTimeout = setTimeout(() => toast.classList.remove('show'), 5000);
     }
 
-    // ---------- AR ЗАПУСК (динамическое создание сцены) ----------
+    // ---------- AR ЗАПУСК ----------
     async function getCameraStream() {
         try {
             const constraints = {
@@ -333,13 +396,11 @@
                     height: { ideal: 720 }
                 }
             };
-            const stream = await navigator.mediaDevices.getUserMedia(constraints);
-            return stream;
+            return await navigator.mediaDevices.getUserMedia(constraints);
         } catch (err) {
             console.warn("Тыловая камера не найдена, пробуем любую", err);
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                return stream;
+                return await navigator.mediaDevices.getUserMedia({ video: true });
             } catch (err2) {
                 throw new Error("Камера не доступна: " + err2.message);
             }
@@ -365,7 +426,6 @@
             scene.setAttribute('embedded', '');
             scene.setAttribute('arjs', 'sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;');
             
-            // Маркеры (все 5)
             scene.innerHTML = `
                 <a-marker type="barcode" value="0">
                     <a-plane position="0 0.1 0" rotation="-90 0 0" width="1.8" height="2.0" color="#4a2e1e" opacity="0.85"></a-plane>
@@ -395,7 +455,6 @@
                 <a-entity camera></a-entity>
             `;
             
-            // Хитрый способ подменить видео (чтобы AR.js взял наш поток)
             scene.addEventListener('loaded', () => {
                 const arCamera = scene.querySelector('a-camera');
                 if (arCamera && arCamera.components && arCamera.components.material) {
@@ -404,7 +463,6 @@
                         mat.material.map.image.srcObject = stream;
                     }
                 }
-                // Подписываем маркеры на появление
                 setTimeout(() => {
                     const markers = scene.querySelectorAll('a-marker');
                     markers.forEach(m => {
@@ -424,19 +482,15 @@
         }
     }
 
-    // ---------- ЗАПУСК ПОСЛЕ НАЖАТИЯ КНОПКИ ----------
+    // ---------- ЗАПУСК ----------
     document.getElementById('startQuestBtn').addEventListener('click', async () => {
-        // Скрываем приветственный экран
         document.getElementById('welcomeScreen').style.display = 'none';
-        // Показываем AR-контейнер и панели
         document.getElementById('arContainer').style.display = 'block';
         document.getElementById('toastAndPanels').style.display = 'block';
-        // Инициализируем тост и кнопки
         initToast();
         document.getElementById('notesBtn').addEventListener('click', () => showModal('notes'));
         document.getElementById('codeBtn').addEventListener('click', () => showModal('code'));
         document.getElementById('closeModal').addEventListener('click', () => document.getElementById('modal').style.display = 'none');
-        // Запускаем AR
         await initAR();
     });
 </script>
