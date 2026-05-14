@@ -39,7 +39,7 @@
             background: linear-gradient(135deg, #1e4a2f 0%, #0e2a1a 100%);
             z-index: 1000;
             overflow-y: auto;
-            padding: 40px 20px 40px;          /* увеличен верхний отступ для логотипа */
+            padding: 40px 20px 40px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -214,7 +214,7 @@
 <!-- ПРИВЕТСТВЕННАЯ СТРАНИЦА -->
 <div id="welcomeScreen" class="welcome-screen">
     <div class="welcome-card">
-        <!-- Логотип вместо заголовка -->
+        <!-- Логотип -->
         <img src="Logo.png" alt="Логотип Тайный советник" class="logo">
         <p>Добро пожаловать в <strong>парк «Сказов»</strong>! Вы готовы стать настоящим следопытом?</p>
         
@@ -410,19 +410,19 @@
             scene.setAttribute('embedded', '');
             scene.setAttribute('arjs', 'sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;');
             
-            // Маркеры (5 штук) – модели вставлены для 0, 1, 4
+            // Маркеры (5 штук) – Ворон, Змей, Домовой, Леший, Яга
             scene.innerHTML = `
-                <!-- Маркер 0 — Ворон (3D-модель) -->
+                <!-- Маркер 0 — Ворон (увеличен) -->
                 <a-marker type="barcode" value="0">
                     <a-plane position="0 0.1 0" rotation="-90 0 0" width="1.8" height="2.0" color="#4a2e1e" opacity="0.85"></a-plane>
-                    <a-entity gltf-model="./voron.glb" position="0 0.8 0" scale="0.5 0.5 0.5"></a-entity>
+                    <a-entity gltf-model="./voron.glb" position="0 0.8 0" scale="0.9 0.9 0.9"></a-entity>
                     <a-text value="Найди букву у входа в избушку Бабы-Яги. Запиши её в заметки." align="center" position="0 -0.4 0" color="#ffec9f" scale="0.7 0.7 0.7" width="2.5"></a-text>
                 </a-marker>
 
-                <!-- Маркер 1 — Змей Горыныч (3D-модель) -->
+                <!-- Маркер 1 — Змей Горыныч (уменьшен) -->
                 <a-marker type="barcode" value="1">
                     <a-plane position="0 0.1 0" rotation="-90 0 0" width="1.8" height="2.0" color="#4a2e1e" opacity="0.85"></a-plane>
-                    <a-entity gltf-model="./zmei.glb" position="0 0.8 0" scale="0.5 0.5 0.5"></a-entity>
+                    <a-entity gltf-model="./zmei.glb" position="0 0.8 0" scale="0.12 0.12 0.12"></a-entity>
                     <a-text value="Посчитай камни с трещиной перед средней головой. Запиши цифру." align="center" position="0 -0.4 0" color="#ffec9f" scale="0.7 0.7 0.7" width="2.5"></a-text>
                 </a-marker>
 
@@ -440,10 +440,10 @@
                     <a-text value="Сосчитай красные ленточки с бантиками на дубе. Это цифра." align="center" position="0 -0.4 0" color="#ffec9f" scale="0.7 0.7 0.7" width="2.5"></a-text>
                 </a-marker>
 
-                <!-- Маркер 4 — Баба-Яга (3D-модель) -->
+                <!-- Маркер 4 — Баба-Яга (увеличена) -->
                 <a-marker type="barcode" value="4">
                     <a-plane position="0 0.1 0" rotation="-90 0 0" width="1.8" height="2.0" color="#4a2e1e" opacity="0.85"></a-plane>
-                    <a-entity gltf-model="./baba_yaga.glb" position="0 0.8 0" scale="0.5 0.5 0.5"></a-entity>
+                    <a-entity gltf-model="./baba_yaga.glb" position="0 0.8 0" scale="0.9 0.9 0.9"></a-entity>
                     <a-text value="На черенке метлы – последняя буква слова 'ЯГА'. Запиши её." align="center" position="0 -0.4 0" color="#ffec9f" scale="0.7 0.7 0.7" width="2.5"></a-text>
                 </a-marker>
 
