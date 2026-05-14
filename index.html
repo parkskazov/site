@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Тайный советник — квест в парке «Сказов»</title>
-    <!-- Локальные библиотеки (лежат рядом) -->
+    <!-- Локальные библиотеки AR -->
     <script src="./aframe.min.js"></script>
     <script src="./aframe-ar.js"></script>
-    <!-- Подключаем шрифт Montserrat -->
+    <!-- Шрифт Montserrat -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <style>
         /* СБРОС */
@@ -63,11 +63,11 @@
             color: #2e241f;
             margin: 20px auto;
         }
-        /* Стиль для логотипа */
+        /* Логотип */
         .welcome-card img.logo {
             display: block;
-            margin: 0 auto 20px;  /* центрируем и добавляем отступ снизу */
-            max-width: 180px;     /* в 1.5 раза больше исходных 120px */
+            margin: 0 auto 20px;
+            max-width: 180px;
             width: 100%;
             height: auto;
         }
@@ -100,9 +100,9 @@
         .rules-list li:before { content: "🧭"; position: absolute; left: 0; top: 0; }
 
         @media (max-width: 550px) {
-            .welcome-screen { padding: 30px 15px 30px; } /* чуть уменьшим верхний отступ на мобильных */
+            .welcome-screen { padding: 30px 15px 30px; }
             .welcome-card { padding: 20px 18px; }
-            .welcome-card img.logo { max-width: 140px; } /* на маленьких экранах логотип поменьше */
+            .welcome-card img.logo { max-width: 140px; }
             .welcome-card h2 { font-size: 1.2rem; }
         }
 
@@ -243,7 +243,7 @@
 <!-- ОСНОВНОЙ КОНТЕЙНЕР ДЛЯ AR -->
 <div id="arContainer" class="ar-container"></div>
 
-<!-- ТАБЛЕТКА И ПАНЕЛИ -->
+<!-- ПАНЕЛИ И ТОСТ -->
 <div id="toastAndPanels" style="display: none;">
     <div id="taskToast" class="toast">
         <div class="toast-icon" id="toastIcon">🐦‍⬛</div>
@@ -321,12 +321,10 @@
         const uc = codeInput.value.trim().toUpperCase();
         const rd = document.getElementById('resultMessage');
         if(uc === CORRECT_CODE) {
-            // Зелёный фон
             rd.innerHTML = "🎉✨ ПОЗДРАВЛЯЕМ! ✨🎉<br><br>⭐ Ты настоящий следопыт! ⭐<br><br>🏆 Беги к шатру «Тайный советник» за призом!";
             rd.style.background = "#4caf50";
             rd.style.color = "white";
         } else {
-            // Красный фон
             rd.innerHTML = "🌿 Ошибка! Проверь порядок и символы. Вернись к первому маркеру (Ворон). 🌿<br><br>🌟 У тебя получится!";
             rd.style.background = "#e53935";
             rd.style.color = "white";
@@ -412,32 +410,43 @@
             scene.setAttribute('embedded', '');
             scene.setAttribute('arjs', 'sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;');
             
+            // Маркеры (5 штук) – модели вставлены для 0, 1, 4
             scene.innerHTML = `
+                <!-- Маркер 0 — Ворон (3D-модель) -->
                 <a-marker type="barcode" value="0">
                     <a-plane position="0 0.1 0" rotation="-90 0 0" width="1.8" height="2.0" color="#4a2e1e" opacity="0.85"></a-plane>
-                    <a-image src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Ccircle cx='100' cy='100' r='90' fill='%23333'/%3E%3Ccircle cx='70' cy='80' r='12' fill='white'/%3E%3Ccircle cx='130' cy='80' r='12' fill='white'/%3E%3Ccircle cx='70' cy='80' r='5' fill='black'/%3E%3Ccircle cx='130' cy='80' r='5' fill='black'/%3E%3Cpolygon points='100,110 80,140 120,140' fill='%23ffaa33'/%3E%3Cpath d='M60 60 L40 30 L70 45 Z' fill='%23666'/%3E%3Cpath d='M140 60 L160 30 L130 45 Z' fill='%23666'/%3E%3Ctext x='100' y='180' font-size='24' text-anchor='middle' fill='white' font-weight='bold'%3E🐦‍⬛%3C/text%3E%3C/svg%3E" position="0 0.8 0" width="1.2" height="1.2"></a-image>
+                    <a-entity gltf-model="./voron.glb" position="0 0.8 0" scale="0.5 0.5 0.5"></a-entity>
                     <a-text value="Найди букву у входа в избушку Бабы-Яги. Запиши её в заметки." align="center" position="0 -0.4 0" color="#ffec9f" scale="0.7 0.7 0.7" width="2.5"></a-text>
                 </a-marker>
+
+                <!-- Маркер 1 — Змей Горыныч (3D-модель) -->
                 <a-marker type="barcode" value="1">
                     <a-plane position="0 0.1 0" rotation="-90 0 0" width="1.8" height="2.0" color="#4a2e1e" opacity="0.85"></a-plane>
-                    <a-image src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%232d6a4f'/%3E%3Ccircle cx='60' cy='80' r='25' fill='%234caf50'/%3E%3Ccircle cx='100' cy='70' r='28' fill='%234caf50'/%3E%3Ccircle cx='140' cy='80' r='25' fill='%234caf50'/%3E%3Ccircle cx='60' cy='70' r='6' fill='black'/%3E%3Ccircle cx='100' cy='60' r='6' fill='black'/%3E%3Ccircle cx='140' cy='70' r='6' fill='black'/%3E%3Cpath d='M90 110 L100 140 L110 110 Z' fill='%23d32f2f'/%3E%3Cpath d='M50 110 L60 140 L70 110 Z' fill='%23d32f2f'/%3E%3Cpath d='M130 110 L140 140 L150 110 Z' fill='%23d32f2f'/%3E%3Ctext x='100' y='180' font-size='28' text-anchor='middle' fill='white'%3E🐉%3C/text%3E%3C/svg%3E" position="0 0.8 0" width="1.2" height="1.2"></a-image>
+                    <a-entity gltf-model="./zmei.glb" position="0 0.8 0" scale="0.5 0.5 0.5"></a-entity>
                     <a-text value="Посчитай камни с трещиной перед средней головой. Запиши цифру." align="center" position="0 -0.4 0" color="#ffec9f" scale="0.7 0.7 0.7" width="2.5"></a-text>
                 </a-marker>
+
+                <!-- Маркер 2 — Домовой (изображение) -->
                 <a-marker type="barcode" value="2">
                     <a-plane position="0 0.1 0" rotation="-90 0 0" width="1.8" height="2.0" color="#4a2e1e" opacity="0.85"></a-plane>
                     <a-image src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%238b5a2b'/%3E%3Ccircle cx='100' cy='90' r='45' fill='%23deb887'/%3E%3Ccircle cx='75' cy='80' r='8' fill='white'/%3E%3Ccircle cx='125' cy='80' r='8' fill='white'/%3E%3Ccircle cx='75' cy='80' r='4' fill='black'/%3E%3Ccircle cx='125' cy='80' r='4' fill='black'/%3E%3Cpath d='M90 110 Q100 130 110 110 Z' fill='%238b4513'/%3E%3Crect x='70' y='130' width='60' height='20' fill='%235d3a1a'/%3E%3Ctext x='100' y='180' font-size='30' text-anchor='middle' fill='white'%3E🪵%3C/text%3E%3C/svg%3E" position="0 0.8 0" width="1.2" height="1.2"></a-image>
                     <a-text value="Под лавочкой вырезана буква на доске. Найди её и запиши." align="center" position="0 -0.4 0" color="#ffec9f" scale="0.7 0.7 0.7" width="2.5"></a-text>
                 </a-marker>
+
+                <!-- Маркер 3 — Леший (изображение) -->
                 <a-marker type="barcode" value="3">
                     <a-plane position="0 0.1 0" rotation="-90 0 0" width="1.8" height="2.0" color="#4a2e1e" opacity="0.85"></a-plane>
                     <a-image src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%232e7d32'/%3E%3Ccircle cx='100' cy='85' r='40' fill='%2371c837'/%3E%3Ccircle cx='75' cy='75' r='7' fill='white'/%3E%3Ccircle cx='125' cy='75' r='7' fill='white'/%3E%3Ccircle cx='75' cy='75' r='3' fill='black'/%3E%3Ccircle cx='125' cy='75' r='3' fill='black'/%3E%3Cpath d='M90 100 L100 125 L110 100 Z' fill='%234caf50'/%3E%3Cpath d='M60 50 L80 30 L90 55 Z' fill='%231b5e20'/%3E%3Cpath d='M140 50 L120 30 L110 55 Z' fill='%231b5e20'/%3E%3Ctext x='100' y='175' font-size='32' text-anchor='middle' fill='white'%3E🌿%3C/text%3E%3C/svg%3E" position="0 0.8 0" width="1.2" height="1.2"></a-image>
                     <a-text value="Сосчитай красные ленточки с бантиками на дубе. Это цифра." align="center" position="0 -0.4 0" color="#ffec9f" scale="0.7 0.7 0.7" width="2.5"></a-text>
                 </a-marker>
+
+                <!-- Маркер 4 — Баба-Яга (3D-модель) -->
                 <a-marker type="barcode" value="4">
                     <a-plane position="0 0.1 0" rotation="-90 0 0" width="1.8" height="2.0" color="#4a2e1e" opacity="0.85"></a-plane>
-                    <a-image src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%235d3a1a'/%3E%3Ccircle cx='100' cy='90' r='45' fill='%23d2b48c'/%3E%3Ccircle cx='70' cy='80' r='9' fill='white'/%3E%3Ccircle cx='130' cy='80' r='9' fill='white'/%3E%3Ccircle cx='70' cy='80' r='5' fill='black'/%3E%3Ccircle cx='130' cy='80' r='5' fill='black'/%3E%3Cpath d='M85 115 L100 135 L115 115 Z' fill='%238b0000'/%3E%3Crect x='65' y='140' width='70' height='15' fill='%23654321'/%3E%3Cpath d='M140 70 L170 50 L155 80 Z' fill='%23654321'/%3E%3Ctext x='100' y='185' font-size='30' text-anchor='middle' fill='white'%3E🧹%3C/text%3E%3C/svg%3E" position="0 0.8 0" width="1.2" height="1.2"></a-image>
+                    <a-entity gltf-model="./baba_yaga.glb" position="0 0.8 0" scale="0.5 0.5 0.5"></a-entity>
                     <a-text value="На черенке метлы – последняя буква слова 'ЯГА'. Запиши её." align="center" position="0 -0.4 0" color="#ffec9f" scale="0.7 0.7 0.7" width="2.5"></a-text>
                 </a-marker>
+
                 <a-entity camera></a-entity>
             `;
             
