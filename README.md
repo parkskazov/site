@@ -31,7 +31,7 @@ bash
 (через команду) 
 ```git clone https://github.com/parkskazov/site.git```
 			
-   (или через сайт GutHub https://github.com/parkskazov/site.git)
+   (или через сайт GutHub https://github.com/parkskazov/site)
 			
 2.   Основа - Index.html, css и js прописаны там же
 
@@ -54,7 +54,7 @@ bash
 
 авторы : https://t.me/Prpr11 и https://t.me/Lybnineg
 
-репозиторий в GitHub https://github.com/LubninEgor/AR_Pervouralsk_Android
+репозиторий в GitHub https://github.com/parkskazov/site
 
 ## 🌟 Roadmap
  ✅Базовая настройка AR и меток  
@@ -62,7 +62,7 @@ bash
  ✅✅✅Поддержка iOS
 
 ## 🤝 Как помочь проекту
-- Предлагайте идеи через [Issues](https://github.com/LubninEgor/AR_Pervouralsk_Android/issues).  
+- Предлагайте идеи через [Issues](https://github.com/parkskazov/site/issues).  
 - Форкайте репозиторий и присылайте Pull Requests.  
 - Тестируйте приложение и сообщайте о багах.
 
