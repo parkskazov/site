@@ -1,335 +1,689 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Тайный советник — квест в парке «Сказов»</title>
-    <script src="./aframe.min.js"></script>
-    <script src="./aframe-ar.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        /* ... все стили без изменений ... */
-        html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Montserrat', sans-serif; background: #1a472a; color: #f9f2cf; }
-        .welcome-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #1e4a2f 0%, #0e2a1a 100%); z-index: 1000; overflow-y: auto; padding: 40px 20px 40px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; box-sizing: border-box; }
-        @supports (padding-top: constant(safe-area-inset-top)) { .welcome-screen { padding-top: calc(40px + constant(safe-area-inset-top)); } }
-        @supports (padding-top: env(safe-area-inset-top)) { .welcome-screen { padding-top: calc(40px + env(safe-area-inset-top)); } }
-        .welcome-card { max-width: 550px; width: 100%; background: #fff9ef; border-radius: 60px 40px 60px 40px; padding: 30px 25px; box-shadow: 0 20px 35px rgba(0,0,0,0.4); color: #2e241f; margin: 20px auto; }
-        .welcome-card img.logo { display: block; margin: 0 auto 20px; max-width: 180px; width: 100%; height: auto; }
-        .welcome-card h2 { font-size: 1.4rem; margin: 20px 0 10px; color: #5d3a1f; }
-        .welcome-card p { font-size: 1rem; line-height: 1.4; margin-bottom: 12px; }
-        .park-info { background: #f0e2ca; border-radius: 30px; padding: 15px; margin: 15px 0; font-style: italic; }
-        .btn-start { background: #5f8b4c; border: none; width: 100%; padding: 16px; font-size: 1.4rem; font-weight: bold; border-radius: 60px; color: white; margin-top: 20px; cursor: pointer; box-shadow: 0 4px 0 #2a4b1e; transition: 0.05s linear; }
-        .btn-start:active { transform: translateY(2px); box-shadow: 0 2px 0 #2a4b1e; }
-        .rules-list { list-style: none; padding-left: 0; }
-        .rules-list li { margin: 12px 0; padding-left: 28px; position: relative; }
-        .rules-list li:before { content: "🧭"; position: absolute; left: 0; top: 0; }
-        @media (max-width: 550px) { .welcome-screen { padding: 30px 15px 30px; } .welcome-card { padding: 20px 18px; } .welcome-card img.logo { max-width: 140px; } .welcome-card h2 { font-size: 1.2rem; } }
-        .ar-container { display: none; width: 100%; height: 100%; position: relative; }
-        .status-overlay { position: fixed; bottom: 100px; left: 20px; right: 20px; background: rgba(0,0,0,0.7); color: #ffec9f; text-align: center; padding: 12px; border-radius: 30px; z-index: 300; font-size: 0.9rem; backdrop-filter: blur(5px); pointer-events: none; }
-        .toast { position: fixed; bottom: -100px; left: 20px; right: 20px; background: #2e241fe6; backdrop-filter: blur(12px); border-radius: 60px; padding: 16px 20px; display: flex; align-items: center; gap: 16px; z-index: 150; transition: bottom 0.3s; box-shadow: 0 8px 20px rgba(0,0,0,0.3); border-left: 6px solid #ffc857; border-right: 6px solid #ffc857; pointer-events: none; }
-        .toast.show { bottom: 30px; }
-        .toast-icon { font-size: 48px; background: #5d3a1f; border-radius: 60px; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; }
-        .toast-text { flex: 1; color: #ffec9f; font-weight: bold; font-size: 1rem; }
-        .toast-close { background: #bb8855; border: none; color: white; border-radius: 40px; padding: 6px 12px; cursor: pointer; pointer-events: auto; }
-        .floating-panel { position: fixed; bottom: 20px; left: 20px; right: 20px; background: #fff9efcc; backdrop-filter: blur(8px); border-radius: 40px; padding: 12px 20px; display: flex; justify-content: space-between; gap: 12px; z-index: 100; pointer-events: auto; }
-        .floating-panel button { background: #5f8b4c; border: none; padding: 10px 16px; border-radius: 40px; font-weight: bold; color: white; flex: 1; cursor: pointer; }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 200; justify-content: center; align-items: center; color: white; }
-        .modal-content { background: #2e241f; padding: 20px; border-radius: 40px; max-width: 90%; max-height: 80%; overflow: auto; text-align: center; }
-        .close-modal { background: #bb8855; border: none; padding: 8px 20px; border-radius: 30px; margin-top: 16px; color: white; font-weight: bold; }
-        .result-message { border-radius: 20px; padding: 12px; margin-top: 12px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Тайный советник — квест в парке «Сказов»</title>
+<script src="./aframe.min.js"></script>
+<script src="./aframe-ar.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+<style>
+html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Montserrat', sans-serif; background: #1a472a; color: #f9f2cf; }
+button { font-family: inherit; }
+
+/* ---------- Стартовый экран ---------- */
+.welcome-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #1e4a2f 0%, #0e2a1a 100%); z-index: 1000; overflow-y: auto; padding: 40px 20px 40px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; box-sizing: border-box; }
+@supports (padding-top: constant(safe-area-inset-top)) { .welcome-screen { padding-top: calc(40px + constant(safe-area-inset-top)); } }
+@supports (padding-top: env(safe-area-inset-top)) { .welcome-screen { padding-top: calc(40px + env(safe-area-inset-top)); } }
+.welcome-card { max-width: 550px; width: 100%; background: #fff9ef; border-radius: 60px 40px 60px 40px; padding: 30px 25px; box-shadow: 0 20px 35px rgba(0,0,0,0.4); color: #2e241f; margin: 20px auto; }
+.welcome-card img.logo { display: block; margin: 0 auto 20px; max-width: 180px; width: 100%; height: auto; }
+.welcome-card h2 { font-size: 1.4rem; margin: 20px 0 10px; color: #5d3a1f; }
+.welcome-card p { font-size: 1rem; line-height: 1.4; margin-bottom: 12px; }
+.park-info { background: #f0e2ca; border-radius: 30px; padding: 15px; margin: 15px 0; font-style: italic; }
+.btn-start { background: #5f8b4c; border: none; width: 100%; padding: 16px; font-size: 1.4rem; font-weight: bold; border-radius: 60px; color: white; margin-top: 20px; cursor: pointer; box-shadow: 0 4px 0 #2a4b1e; transition: 0.05s linear; }
+.btn-start:active { transform: translateY(2px); box-shadow: 0 2px 0 #2a4b1e; }
+.rules-list { list-style: none; padding-left: 0; }
+.rules-list li { margin: 12px 0; padding-left: 28px; position: relative; }
+.rules-list li:before { content: "🧭"; position: absolute; left: 0; top: 0; }
+@media (max-width: 550px) { .welcome-screen { padding: 30px 15px 30px; } .welcome-card { padding: 20px 18px; } .welcome-card img.logo { max-width: 140px; } .welcome-card h2 { font-size: 1.2rem; } }
+
+/* ---------- AR-сцена и статус ---------- */
+.ar-container { display: none; width: 100%; height: 100%; position: relative; }
+.status-overlay { position: fixed; bottom: calc(110px + env(safe-area-inset-bottom, 0px)); left: 20px; right: 20px; background: rgba(0,0,0,0.7); color: #ffec9f; text-align: center; padding: 12px; border-radius: 30px; z-index: 300; font-size: 0.9rem; backdrop-filter: blur(5px); pointer-events: none; }
+
+/* ---------- Верхняя плашка: «Сюжет» / «Подсказка» ---------- */
+.top-pill { display: none; position: fixed; top: calc(12px + env(safe-area-inset-top, 0px)); left: 16px; right: 16px; z-index: 120; align-items: center; gap: 12px; min-height: 54px; padding: 6px 22px 6px 8px; border: none; border-radius: 60px; background: #c8e3b5; color: #3f7a2a; font-size: 1.25rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,0.3); text-align: left; }
+.top-pill.show { display: flex; }
+.top-pill:active { transform: translateY(1px); }
+.top-pill.attention { animation: pillPulse 0.9s ease-in-out 3; }
+@keyframes pillPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
+@media (prefers-reduced-motion: reduce) { .top-pill.attention { animation: none; } }
+.pill-icon { flex: 0 0 42px; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-size: 28px; }
+.pill-icon img, .pill-icon svg, .info-icon img, .info-icon svg { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+/* ---------- Окно по центру экрана (сюжет / подсказка) ---------- */
+.info-overlay { display: none; position: fixed; inset: 0; z-index: 220; background: rgba(0,0,0,0.65); justify-content: center; align-items: center; padding: 16px; }
+.info-overlay.show { display: flex; }
+.info-card { width: 100%; max-width: 480px; max-height: 82vh; overflow-y: auto; background: #fff9ef; color: #2e241f; border-radius: 40px; padding: 22px 22px 20px; box-shadow: 0 20px 35px rgba(0,0,0,0.45); }
+.info-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.info-icon { flex: 0 0 48px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; font-size: 34px; }
+.info-card h3 { font-size: 1.3rem; color: #3f7a2a; }
+.info-text { font-size: 1.02rem; line-height: 1.5; }
+.info-actions { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+.info-actions button { flex: 1 1 140px; min-height: 46px; border: none; border-radius: 40px; padding: 10px 16px; font-weight: 700; color: #fff; cursor: pointer; }
+.btn-audio { background: #5f8b4c; }
+.btn-close { background: #bb8855; }
+
+/* ---------- Карточка загадки (снизу, над панелью кнопок) ---------- */
+.riddle-card { display: none; position: fixed; left: 16px; right: 16px; bottom: calc(100px + env(safe-area-inset-bottom, 0px)); z-index: 150; max-height: 38vh; align-items: center; gap: 12px; padding: 12px 12px 12px 14px; background: rgba(46,36,31,0.94); border-left: 6px solid #ffc857; border-right: 6px solid #ffc857; border-radius: 40px; box-shadow: 0 8px 20px rgba(0,0,0,0.35); }
+.riddle-card.show { display: flex; }
+.riddle-icon { flex: 0 0 52px; width: 52px; height: 52px; border-radius: 50%; background: #5d3a1f; display: flex; align-items: center; justify-content: center; font-size: 30px; }
+.riddle-text { flex: 1; min-width: 0; max-height: calc(38vh - 24px); overflow-y: auto; color: #ffec9f; font-weight: 700; font-size: 0.98rem; line-height: 1.35; }
+.riddle-btns { flex: 0 0 auto; display: flex; flex-direction: column; gap: 8px; }
+.round-btn { width: 44px; height: 44px; border: none; border-radius: 50%; background: #bb8855; color: #fff; font-size: 1.05rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+/* ---------- Нижняя панель ---------- */
+.floating-panel { position: fixed; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); left: 16px; right: 16px; background: #fff9efcc; backdrop-filter: blur(8px); border-radius: 40px; padding: 10px 12px; display: flex; justify-content: space-between; gap: 8px; z-index: 100; pointer-events: auto; }
+.floating-panel button { background: #5f8b4c; border: none; min-height: 44px; padding: 8px 6px; border-radius: 40px; font-weight: bold; font-size: 0.82rem; color: white; flex: 1; cursor: pointer; }
+.floating-panel button:disabled { opacity: 0.45; cursor: default; }
+
+/* ---------- Заметки и ввод кода ---------- */
+.modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 230; justify-content: center; align-items: center; color: white; }
+.modal-content { background: #2e241f; padding: 20px; border-radius: 40px; max-width: 90%; max-height: 80%; overflow: auto; text-align: center; }
+.close-modal { background: #bb8855; border: none; padding: 8px 20px; border-radius: 30px; margin-top: 16px; color: white; font-weight: bold; min-height: 40px; }
+.result-message { border-radius: 20px; padding: 12px; margin-top: 12px; }
+</style>
 </head>
 <body>
 
 <div id="welcomeScreen" class="welcome-screen">
-    <div class="welcome-card">
-        <img src="Logo.png" alt="Логотип Тайный советник" class="logo">
-        <p>Добро пожаловать в <strong>парк «Сказов»</strong>! Вы готовы стать настоящим следопытом?</p>
-        <h2>🌲 Что вас ждёт</h2>
-        <ul class="rules-list">
-            <li>Найдите <strong>5 чёрно-белых маркеров</strong> по всему парку.</li>
-            <li>Наведите камеру на маркер — прямо на экране появится сказочный герой и задание.</li>
-            <li>Записывайте полученные части кода в «Блокнот советника» (кнопка внизу).</li>
-            <li>Соберите все 5 символов в правильном порядке и введите код на вкладке «Ввести код».</li>
-            <li>Получите приз на сказочной кассе!</li>
-        </ul>
-        <h2>🏰 О парке «Сказов»</h2>
-        <div class="park-info">
-            <p>📍 <strong>Парк «Сказов»</strong> — это уникальное место, где оживают герои русских народных сказок. Здесь вы встретите избушку Бабы-Яги, Змея Горыныча с камнями, дуб с ленточками Лешего и многое другое.</p>
-            <p>✨ Официальный сайт: <a href="https://parkskazov.ru/" target="_blank">parkskazov.ru</a></p>
-            <p>🌳 В парке есть кафе, детские площадки и аттракционы. Приятного путешествия!</p>
-        </div>
-        <button id="startQuestBtn" class="btn-start">🔍 НАЧАТЬ КВЕСТ 🔍</button>
-        <p style="font-size: 0.75rem; text-align: center; margin-top: 15px;">* Для работы потребуется доступ к камере</p>
+  <div class="welcome-card">
+    <img src="Logo.png" alt="Логотип Тайный советник" class="logo">
+    <p>Добро пожаловать в <strong>парк «Сказов»</strong>! Вы готовы стать настоящим следопытом?</p>
+    <h2>🌲 Что вас ждёт</h2>
+    <ul class="rules-list">
+      <li>Найдите <strong>5 чёрно-белых маркеров</strong> по всему парку.</li>
+      <li>Наведите камеру на маркер — прямо на экране появится сказочный герой и задание.</li>
+      <li>Записывайте полученные части кода в «Блокнот советника» (кнопка внизу).</li>
+      <li>Соберите все 5 символов в правильном порядке и введите код на вкладке «Ввести код».</li>
+      <li>Получите приз на сказочной кассе!</li>
+    </ul>
+    <h2>🏰 О парке «Сказов»</h2>
+    <div class="park-info">
+      <p>📍 <strong>Парк «Сказов»</strong> — это уникальное место, где оживают герои русских народных сказок. Здесь вы встретите избушку Бабы-Яги, Змея Горыныча с камнями, дуб с ленточками Лешего и многое другое.</p>
+      <p>✨ Официальный сайт: <a href="https://parkskazov.ru/" target="_blank">parkskazov.ru</a></p>
+      <p>🌳 В парке есть кафе, детские площадки и аттракционы. Приятного путешествия!</p>
     </div>
+    <button id="startQuestBtn" class="btn-start">🔍 НАЧАТЬ КВЕСТ 🔍</button>
+    <p style="font-size: 0.75rem; text-align: center; margin-top: 15px;">* Для работы потребуется доступ к камере</p>
+  </div>
 </div>
 
 <div id="arContainer" class="ar-container"></div>
 
-<div id="toastAndPanels" style="display: none;">
-    <div id="taskToast" class="toast">
-        <div class="toast-icon" id="toastIcon">🐦‍⬛</div>
-        <div class="toast-text" id="toastText">Найди букву у входа в избушку Бабы-Яги</div>
-        <button class="toast-close" id="closeToast">✖</button>
+<div id="uiLayer" style="display: none;">
+
+  <!-- Верхняя плашка: до первого маркера «Сюжет», дальше «Подсказка» -->
+  <button id="topPill" class="top-pill" type="button">
+    <span class="pill-icon" id="pillIcon"></span>
+    <span class="pill-label" id="pillLabel">Подсказка</span>
+  </button>
+
+  <!-- Загадка маркера -->
+  <div id="riddleCard" class="riddle-card" role="status">
+    <div class="riddle-icon" id="riddleIcon">🐦‍⬛</div>
+    <div class="riddle-text" id="riddleText"></div>
+    <div class="riddle-btns">
+      <button id="riddleAudioBtn" class="round-btn" type="button" aria-label="Прослушать загадку">🔊</button>
+      <button id="riddleCloseBtn" class="round-btn" type="button" aria-label="Закрыть загадку">✖</button>
     </div>
-    <div class="floating-panel">
-        <button id="notesBtn">📔 МОИ ЗАМЕТКИ</button>
-        <button id="codeBtn">🔐 ВВЕСТИ КОД</button>
+  </div>
+
+  <!-- Нижняя панель -->
+  <div class="floating-panel">
+    <button id="riddleBtn" type="button" disabled>🧩 ЗАГАДКА</button>
+    <button id="notesBtn" type="button">📔 ЗАМЕТКИ</button>
+    <button id="codeBtn" type="button">🔐 КОД</button>
+  </div>
+
+  <!-- Окно по центру: сюжет или подсказка -->
+  <div id="infoOverlay" class="info-overlay" role="dialog" aria-modal="true" aria-labelledby="infoTitle">
+    <div class="info-card">
+      <div class="info-head">
+        <span class="info-icon" id="infoIcon"></span>
+        <h3 id="infoTitle"></h3>
+      </div>
+      <p class="info-text" id="infoText"></p>
+      <div class="info-actions">
+        <button id="infoAudioBtn" class="btn-audio" type="button">🔊 Прослушать снова</button>
+        <button id="infoCloseBtn" class="btn-close" type="button">ЗАКРЫТЬ</button>
+      </div>
     </div>
-    <div id="modal" class="modal">
-        <div class="modal-content">
-            <div id="modalBody"></div>
-            <button class="close-modal" id="closeModal">ЗАКРЫТЬ</button>
-        </div>
+  </div>
+
+  <!-- Заметки / ввод кода -->
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <div id="modalBody"></div>
+      <button class="close-modal" id="closeModal">ЗАКРЫТЬ</button>
     </div>
-    <div id="statusMsg" class="status-overlay">🔍 Запрос доступа к камере...</div>
+  </div>
+
+  <div id="statusMsg" class="status-overlay">🔍 Запрос доступа к камере...</div>
 </div>
 
 <script>
-    const tasks = {
-        "0": { icon: "🐦‍⬛", text: "Буква «бабочка» если сложить крылья. Запиши в заметки эту букву." },
-        "1": { icon: "🐉", text: "Я сражался с Добрыней, сколько голов участвовало в бою? Получившуюся цифру запиши в заметки." },
-        "2": { icon: "🪵", text: "Самый главный сказочный злодей, запиши в заметки первую его букву." },
-        "3": { icon: "🌿", text: "Сколько красных скворечников у лешего на заборе, сосчитай и получившуюся цифру запиши в заметки." },
-        "4": { icon: "🧹", text: "Последняя буква птицы, которая сторожит объект бабы Яги , запиши ее в заметки." }
-    };
-    const CORRECT_CODE = "В4К2А";
-    const LOCK_DURATION = 24 * 60 * 60 * 1000; // 24 часа в миллисекундах
+/* =====================================================================
+   НАСТРОЙКИ КВЕСТА
+   ===================================================================== */
 
-    let notesField, saveNotesBtn, codeInput, checkBtn, resetBtn;
+// Порядок прохождения (ID маркеров): Яга → Ворон → Домовой → Горыныч → Леший
+const MARKER_ORDER = ["4", "0", "2", "1", "3"];
 
-    function buildNotesUI() {
-        return `<h3>📔 Блокнот советника</h3><p>Записывай найденные символы по порядку, буквы пиши заглавные.</p>
-        <textarea id="notesField" rows="4" style="width:100%; padding:10px; border-radius:20px; margin:10px 0;"></textarea>
-        <button id="saveNotesBtn" style="background:#b3864a; color:white; border:none; padding:10px 20px; border-radius:40px; font-weight:bold;">💾 Сохранить заметки</button>`;
+// Загадки (по ID маркера)
+const tasks = {
+  "0": { icon: "🐦‍⬛", text: "Буква «бабочка» если сложить крылья. Запиши в заметки эту букву." },
+  "1": { icon: "🐉", text: "Я сражался с Добрыней, сколько голов участвовало в бою? Получившуюся цифру запиши в заметки." },
+  "2": { icon: "🪵", text: "Самый главный сказочный злодей, запиши в заметки первую его букву." },
+  "3": { icon: "🌿", text: "Сколько красных скворечников у лешего на заборе, сосчитай и получившуюся цифру запиши в заметки." },
+  "4": { icon: "🧹", text: "Последняя буква птицы, которая сторожит объект бабы Яги , запиши ее в заметки." }
+};
+
+// Сюжет на старте
+const STORY = {
+  title: "Письмо от Василисы",
+  text: "Здравствуй, добрый путник! Пишет тебе Василиса Премудрая прямо из плена Кощея Бессмертного. Мне нужна помощь бесстрашного богатыря, который готов пройти полный тайн путь и разгадать все загадки Парка Сказов. Тебе предстоит найти 5 маркеров на территории Сказочного Парка, отгадать шифр из цифр и букв, и вписать его в финальное окно. Будь осторожен на пути, смотри в оба и будь внимателен! А первую часть кода ты найдешь рядом с тем местом, где живет мудрая старушка. Однажды она вручила Ивану Царевичу путеводный клубок. Он точно поможет тебе в твоем путешествии. Удачи!"
+};
+
+// Подсказки: ключ — маркер, который гость ТОЛЬКО ЧТО отсканировал;
+// текст ведёт к следующему маркеру. У последнего маркера подсказки нет.
+const HINTS = {
+  "4": "Загляни в самую высокую башню, откуда свисают прекрасные волосы Рапунцель",
+  "0": "Рядом слышалось кудахтанье петухов и милый писк кроликов",
+  "2": "Рядом с рестораном была замечена необыкновенная огненно-рыжая девушка с большой любовью к танцам и пляскам",
+  "1": "Если заблудишься в лесу, наш добрый старичок лесничий всегда поможет найти дорогу домой",
+  "3": null
+};
+
+// Озвучка. Если файла нет в репозитории — кнопка «Прослушать» просто скрывается.
+// Файлы лежат в корне репозитория; если перенесёте в папку, впишите её сюда, например "audio/".
+// Регистр и пробелы в именах важны: GitHub Pages различает «Загадка БЯ.mp3» и «загадка бя.mp3».
+const AUDIO_DIR = "";
+const a = name => AUDIO_DIR + name;
+const AUDIO = {
+  story: a("Начало.mp3"),
+  riddle: {
+    "4": a("Загадка БЯ.mp3"),       // Баба Яга
+    "0": a("Загадка Ворон.mp3"),
+    "2": a("Загадка Домовой.mp3"),
+    "1": a("Загадка Горыныч.mp3"),
+    "3": a("Загадка Леший.mp3")
+  },
+  // Ключ — маркер, после скана которого показывается подсказка.
+  // Подсказка 1 и 2 в репозитории пока не загружены — имена уже прописаны, заработают после загрузки.
+  hint: {
+    "4": a("Подсказка 1.mp3"),      // «Загляни в самую высокую башню…»
+    "0": a("Подсказка 2.mp3"),      // «Рядом слышалось кудахтанье петухов…»
+    "2": a("Подсказка 3.mp3"),      // «Рядом с рестораном…»
+    "1": a("Подсказка 4.mp3")       // «Если заблудишься в лесу…»
+  },
+  final: a("Финал.mp3")
+};
+
+// Финальный код: Яга-Ворон-Домовой-Горыныч-Леший = А-В-К-4-2
+// Сравнение идёт после нормализации, поэтому латинские A/B/K тоже сработают.
+const LATIN_TO_CYR = { A: "А", B: "В", C: "С", E: "Е", H: "Н", K: "К", M: "М", O: "О", P: "Р", T: "Т", X: "Х", Y: "У" };
+function normalizeCode(s) {
+  return String(s).toUpperCase().replace(/\s+/g, "").replace(/[A-Z]/g, ch => LATIN_TO_CYR[ch] || ch);
+}
+const CORRECT_CODE = normalizeCode("АВК42");
+const LOCK_DURATION = 24 * 60 * 60 * 1000; // 24 часа
+
+// Иконка путеводного клубка: если рядом лежит klubok.png — берётся он, иначе рисованная заглушка
+const YARN_SVG = '<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="30" cy="30" r="26" fill="#f6a0b9" stroke="#d94f7e" stroke-width="2"/><g fill="none" stroke="#d94f7e" stroke-width="2.2" stroke-linecap="round"><path d="M6 22Q30 40 54 22"/><path d="M4.5 32Q30 54 55.5 32"/><path d="M12 12Q22 30 14 50"/><path d="M30 4.5Q38 30 30 55.5"/><path d="M48 12Q38 30 46 50"/><path d="M44 52Q52 58 60 56"/></g></svg>';
+let yarnHTML = YARN_SVG;
+(function probeYarnImage() {
+  const img = new Image();
+  img.onload = () => { yarnHTML = '<img src="klubok.png" alt="">'; if (typeof updatePill === "function") updatePill(); };
+  img.src = "klubok.png";
+})();
+
+/* =====================================================================
+   ХРАНИЛИЩЕ И ПРОГРЕСС
+   ===================================================================== */
+const KEY_NOTES = "taimny_sovetnik_notes";
+const KEY_PRIZE = "prizeClaimedTime";
+const KEY_PROGRESS = "taimny_sovetnik_progress";
+
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
+  del(k) { try { localStorage.removeItem(k); } catch (e) {} }
+};
+
+function loadProgress() {
+  try {
+    const o = JSON.parse(store.get(KEY_PROGRESS) || "null");
+    if (o && typeof o.step === "number" && o.step >= -1 && o.step < MARKER_ORDER.length) {
+      return { storySeen: !!o.storySeen, step: o.step, last: tasks[o.last] ? o.last : null };
     }
-    function buildCodeUI() {
-        return `<h3>🔓 Введи волшебный шифр</h3><p>Введи 5 символов (Ворон→Горыныч→Домовой→Леший→Яга)</p>
-        <input type="text" id="codeInput" maxlength="5" style="width:100%; padding:12px; font-size:1.5rem; text-align:center; text-transform:uppercase; border-radius:60px; border:2px solid #e4b363; margin:10px 0;">
-        <button id="checkCodeBtn" style="background:#5f8b4c; color:white; border:none; padding:10px 20px; border-radius:40px; font-weight:bold;">✨ Открыть тайну ✨</button>
-        <div id="resultMessage" class="result-message" style="background:#eadbbe;">👻 Здесь появится ответ...</div>
-        <button id="resetGameBtn" style="background:#bb8855; color:white; border:none; padding:10px 20px; border-radius:40px; margin-top:12px;">🔄 Начать заново</button>`;
+  } catch (e) {}
+  return { storySeen: false, step: -1, last: null };
+}
+function saveProgress() { store.set(KEY_PROGRESS, JSON.stringify(progress)); }
+
+let progress = loadProgress();   // step: индекс самого дальнего отсканированного маркера в MARKER_ORDER
+let currentRiddle = null;        // какая загадка сейчас показана / была закрыта
+
+/* =====================================================================
+   ОЗВУЧКА: один плеер, одновременно играет только одна запись
+   ===================================================================== */
+const SILENT_WAV = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAABErAAABAAgAZGF0YQAAAAA=";
+
+const voice = (function () {
+  const el = new Audio();
+  el.preload = "auto";
+  let token = 0;
+  let unlocking = false;
+
+  function stop() {
+    token++;
+    unlocking = false;
+    try { el.pause(); } catch (e) {}
+    try { el.currentTime = 0; } catch (e) {}
+  }
+
+  // Запускает запись с начала. onFail вызывается, если файла нет или формат не поддерживается.
+  // Имя файла пробуется в двух Unicode-формах (NFC и NFD): буква «й» бывает сохранена по-разному,
+  // в зависимости от того, с какой системы файл загружали на GitHub.
+  function play(src, onFail) {
+    stop();
+    if (!src) return false;
+    const my = token;
+    const variants = Array.from(new Set([src.normalize("NFC"), src.normalize("NFD")]));
+    let i = 0;
+
+    function load() {
+      let done = false;
+      const fail = () => {
+        if (done || my !== token) return;
+        done = true;
+        i++;
+        if (i < variants.length) load();
+        else if (onFail) onFail();
+      };
+      el.onerror = fail;
+      el.src = encodeURI(variants[i]);
+      try {
+        const p = el.play();
+        if (p && p.catch) p.catch(err => { if (err && err.name === "NotSupportedError") fail(); });
+      } catch (e) { fail(); }
     }
 
-    function loadNotes() {
-        const saved = localStorage.getItem('taimny_sovetnik_notes');
-        if (saved && notesField) notesField.value = saved;
-        else if (notesField) notesField.value = "";
-    }
-    function saveNotes() {
-        if (!notesField) return;
-        localStorage.setItem('taimny_sovetnik_notes', notesField.value);
-        const btn = document.getElementById('saveNotesBtn');
-        if(btn) { const orig = btn.innerText; btn.innerText = '✅ Сохранено!'; setTimeout(() => btn.innerText = orig, 800); }
-    }
-    function resetGame() {
-        localStorage.removeItem('taimny_sovetnik_notes');
-        // Намеренно не трогаем prizeClaimedTime, чтобы приз остался «полученным»
-        if(notesField) notesField.value = "";
-        if(codeInput) codeInput.value = "";
-        const rd = document.getElementById('resultMessage');
-        if(rd) { rd.innerHTML = "🧹 Советник всё стёр. Начинай сначала!"; rd.style.background = "#eadbbe"; rd.style.color = "inherit"; }
-    }
+    load();
+    return true;
+  }
 
-    function checkCode() {
-        if (!codeInput) return;
-        const uc = codeInput.value.trim().toUpperCase();
-        const rd = document.getElementById('resultMessage');
-        if (!rd) return;
+  // Вызывать из обработчика касания: iOS/Android разрешают звук только после жеста
+  function unlock() {
+    try {
+      unlocking = true;
+      el.src = SILENT_WAV;
+      const p = el.play();
+      if (p && p.then) p.then(() => { if (unlocking) { el.pause(); unlocking = false; } }).catch(() => { unlocking = false; });
+    } catch (e) { unlocking = false; }
+  }
 
-        const stored = localStorage.getItem('prizeClaimedTime');
-        const now = Date.now();
+  return { play, stop, unlock };
+})();
 
-        // Если блокировка активна (приз уже получен и 24 часа не прошли)
-        if (stored) {
-            const claimedTime = parseInt(stored, 10);
-            if (now - claimedTime < LOCK_DURATION) {
-                rd.innerHTML = "🎁 Приз уже был получен!<br>Попробуй снова через 24 часа.";
-                rd.style.background = "#ff9800";
-                rd.style.color = "white";
-                return;
-            } else {
-                // Блокировка истекла — можно получить снова
-                localStorage.removeItem('prizeClaimedTime');
-            }
+document.addEventListener("visibilitychange", () => { if (document.hidden) voice.stop(); });
+
+/* =====================================================================
+   ВЕРХНЯЯ ПЛАШКА И ОКНО «СЮЖЕТ / ПОДСКАЗКА»
+   ===================================================================== */
+let pill, pillIcon, pillLabel, infoOverlay, infoIcon, infoTitle, infoText, infoAudioBtn, infoOpen = false, infoSrc = null;
+
+function pillMode() {
+  if (progress.step < 0) return "story";
+  return HINTS[MARKER_ORDER[progress.step]] ? "hint" : null;
+}
+
+function updatePill(attention) {
+  if (!pill) return;
+  const mode = pillMode();
+  if (!mode) { pill.classList.remove("show"); return; }
+  pill.dataset.mode = mode;
+  pillIcon.innerHTML = mode === "hint" ? yarnHTML : "📜";
+  pillLabel.textContent = mode === "hint" ? "Подсказка" : "Сюжет";
+  pill.classList.add("show");
+  if (attention) {
+    pill.classList.remove("attention");
+    void pill.offsetWidth;
+    pill.classList.add("attention");
+  }
+}
+
+function openInfo(kind) {
+  let title, text, icon, src;
+  if (kind === "story") {
+    title = STORY.title; text = STORY.text; icon = "📜"; src = AUDIO.story;
+  } else {
+    const id = MARKER_ORDER[progress.step];
+    text = id ? HINTS[id] : null;
+    if (!text) return;
+    title = "Подсказка"; icon = yarnHTML; src = AUDIO.hint && AUDIO.hint[id];
+  }
+  infoTitle.textContent = title;
+  infoText.textContent = text;
+  infoIcon.innerHTML = icon;
+  infoSrc = src || null;
+  infoAudioBtn.style.display = infoSrc ? "" : "none";
+  infoOverlay.classList.add("show");
+  infoOpen = true;
+  playInfoAudio();
+}
+
+function playInfoAudio() {
+  if (!infoSrc) return;
+  voice.play(infoSrc, () => { infoAudioBtn.style.display = "none"; });
+}
+
+function closeInfo() {
+  infoOverlay.classList.remove("show");
+  infoOpen = false;
+  voice.stop();
+}
+
+/* =====================================================================
+   ЗАГАДКА МАРКЕРА
+   ===================================================================== */
+let riddleCard, riddleIcon, riddleText, riddleAudioBtn, riddleBtn;
+
+function playRiddleAudio(id) {
+  const src = AUDIO.riddle && AUDIO.riddle[id];
+  riddleAudioBtn.style.display = src ? "" : "none";
+  if (src) voice.play(src, () => { riddleAudioBtn.style.display = "none"; });
+  else voice.stop();
+}
+
+function showRiddle(id) {
+  const t = tasks[id];
+  if (!t) return;
+  currentRiddle = id;
+  progress.last = id;
+  saveProgress();
+  riddleIcon.textContent = t.icon;
+  riddleText.textContent = t.text;
+  riddleCard.classList.add("show");
+  riddleBtn.disabled = false;
+  playRiddleAudio(id);
+}
+
+function closeRiddle() {
+  riddleCard.classList.remove("show");
+  voice.stop();
+}
+
+function onMarkerFound(id) {
+  const idx = MARKER_ORDER.indexOf(id);
+  if (idx < 0) return;
+  const isNew = idx > progress.step;
+
+  // Пока открыто окно сюжета/подсказки, повторные срабатывания старых маркеров игнорируем,
+  // чтобы они не перебивали озвучку. Новый маркер закрывает окно.
+  if (infoOpen) {
+    if (!isNew) return;
+    closeInfo();
+  }
+
+  if (isNew) {
+    progress.step = idx;
+    saveProgress();
+    updatePill(true);
+  }
+
+  const modalOpen = document.getElementById("modal").style.display === "flex";
+  if (currentRiddle !== id && !modalOpen) showRiddle(id);
+}
+
+/* =====================================================================
+   ЗАМЕТКИ И ВВОД КОДА
+   ===================================================================== */
+let notesField, saveNotesBtn, codeInput, checkBtn, resetBtn;
+
+function buildNotesUI() {
+  return `<h3>📔 Блокнот советника</h3><p>Записывай найденные символы по порядку, буквы пиши заглавные.</p>
+<textarea id="notesField" rows="4" style="width:100%; padding:10px; border-radius:20px; margin:10px 0;"></textarea>
+<button id="saveNotesBtn" style="background:#b3864a; color:white; border:none; padding:10px 20px; border-radius:40px; font-weight:bold;">💾 Сохранить заметки</button>`;
+}
+
+function buildCodeUI() {
+  return `<h3>🔓 Введи волшебный шифр</h3><p>Введи 5 символов (Яга→Ворон→Домовой→Горыныч→Леший)</p>
+<input type="text" id="codeInput" maxlength="5" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" style="width:100%; padding:12px; font-size:1.5rem; text-align:center; text-transform:uppercase; border-radius:60px; border:2px solid #e4b363; margin:10px 0;">
+<button id="checkCodeBtn" style="background:#5f8b4c; color:white; border:none; padding:10px 20px; border-radius:40px; font-weight:bold;">✨ Открыть тайну ✨</button>
+<div id="resultMessage" class="result-message" style="background:#eadbbe;">👻 Здесь появится ответ...</div>
+<button id="resetGameBtn" style="background:#bb8855; color:white; border:none; padding:10px 20px; border-radius:40px; margin-top:12px;">🔄 Начать заново</button>`;
+}
+
+function loadNotes() {
+  const saved = store.get(KEY_NOTES);
+  if (notesField) notesField.value = saved || "";
+}
+
+function saveNotes() {
+  if (!notesField) return;
+  store.set(KEY_NOTES, notesField.value);
+  const btn = document.getElementById("saveNotesBtn");
+  if (btn) { const orig = btn.innerText; btn.innerText = "✅ Сохранено!"; setTimeout(() => btn.innerText = orig, 800); }
+}
+
+function resetGame() {
+  store.del(KEY_NOTES);
+  // Приз (prizeClaimedTime) намеренно не трогаем — блокировка на 24 часа остаётся
+  progress = { storySeen: true, step: -1, last: null };
+  saveProgress();
+  currentRiddle = null;
+  closeRiddle();
+  riddleBtn.disabled = true;
+  updatePill(false);
+  if (notesField) notesField.value = "";
+  if (codeInput) codeInput.value = "";
+  const rd = document.getElementById("resultMessage");
+  if (rd) { rd.innerHTML = "🧹 Советник всё стёр. Начинай сначала!"; rd.style.background = "#eadbbe"; rd.style.color = "inherit"; }
+}
+
+function isPrizeLocked() {
+  const stored = store.get(KEY_PRIZE);
+  if (!stored) return false;
+  const claimedTime = parseInt(stored, 10);
+  if (Date.now() - claimedTime < LOCK_DURATION) return true;
+  store.del(KEY_PRIZE);
+  return false;
+}
+
+function checkCode() {
+  if (!codeInput) return;
+  const rd = document.getElementById("resultMessage");
+  if (!rd) return;
+
+  if (isPrizeLocked()) {
+    rd.innerHTML = "🎁 Приз уже был получен!<br>Попробуй снова через 24 часа.";
+    rd.style.background = "#ff9800";
+    rd.style.color = "white";
+    return;
+  }
+
+  if (normalizeCode(codeInput.value) === CORRECT_CODE) {
+    rd.innerHTML = "🎉✨ ПОЗДРАВЛЯЕМ! ✨🎉<br><br>⭐ Ты настоящий следопыт! ⭐<br><br>🏆 Беги на сказочную кассу (синий домик при входе в парк) за призом!";
+    rd.style.background = "#4caf50";
+    rd.style.color = "white";
+    store.set(KEY_PRIZE, Date.now().toString());
+    if (AUDIO.final) voice.play(AUDIO.final);
+  } else {
+    rd.innerHTML = "🌿 Ошибка! Проверь порядок и символы. Вернись к первому маркеру (Баба Яга). 🌿<br><br>🌟 У тебя получится!";
+    rd.style.background = "#e53935";
+    rd.style.color = "white";
+  }
+}
+
+function showModal(type) {
+  const modal = document.getElementById("modal"), modalBody = document.getElementById("modalBody");
+  if (type === "notes") {
+    modalBody.innerHTML = buildNotesUI();
+    notesField = document.getElementById("notesField");
+    saveNotesBtn = document.getElementById("saveNotesBtn");
+    loadNotes();
+    if (saveNotesBtn) saveNotesBtn.addEventListener("click", saveNotes);
+  } else if (isPrizeLocked()) {
+    modalBody.innerHTML = `
+      <h3>🎁 Приз уже получен!</h3>
+      <br>
+      <p>Ты уже забирал свой приз.</p>
+      <p>Приходи за новым через 24 часа.</p>
+    `;
+  } else {
+    modalBody.innerHTML = buildCodeUI();
+    codeInput = document.getElementById("codeInput");
+    checkBtn = document.getElementById("checkCodeBtn");
+    resetBtn = document.getElementById("resetGameBtn");
+    if (checkBtn) checkBtn.addEventListener("click", checkCode);
+    if (resetBtn) resetBtn.addEventListener("click", resetGame);
+  }
+  modal.style.display = "flex";
+}
+
+function closeModal() {
+  document.getElementById("modal").style.display = "none";
+  voice.stop();
+}
+
+/* =====================================================================
+   КАМЕРА И AR
+   ===================================================================== */
+async function getCameraStream() {
+  try {
+    const constraints = { video: { facingMode: { exact: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } } };
+    return await navigator.mediaDevices.getUserMedia(constraints);
+  } catch (err) {
+    console.warn("Тыловая камера не найдена, пробуем любую", err);
+    try { return await navigator.mediaDevices.getUserMedia({ video: true }); }
+    catch (err2) { throw new Error("Камера не доступна: " + err2.message); }
+  }
+}
+
+// Камера доступна → показываем сюжет (один раз; потом он живёт плашкой сверху)
+function onCameraReady() {
+  updatePill(false);
+  if (!progress.storySeen && progress.step < 0) {
+    progress.storySeen = true;
+    saveProgress();
+    openInfo("story");
+  }
+}
+
+async function initAR() {
+  const statusDiv = document.getElementById("statusMsg");
+  statusDiv.style.display = "block";
+  statusDiv.innerText = "📷 Запрос доступа к камере...";
+
+  try {
+    const stream = await getCameraStream();
+    statusDiv.innerText = "📷 Камера получена, запускаем AR...";
+    onCameraReady();
+
+    const videoElement = document.createElement("video");
+    videoElement.srcObject = stream;
+    videoElement.autoplay = true;
+    videoElement.muted = true;
+    videoElement.playsInline = true;
+    await videoElement.play();
+
+    const scene = document.createElement("a-scene");
+    scene.setAttribute("embedded", "");
+    scene.setAttribute("arjs", "sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;");
+
+    // Модели и расположение не менялись.
+    // Маркер 4 — по сюжету Баба Яга (пока стоит voron.glb, замена модели — отдельной правкой).
+    // Маркер 2 — по сюжету «Домовой» (сейчас kosei.glb).
+    scene.innerHTML = `
+      <!-- Маркер 0 — Ворон (babochka.glb) -->
+      <a-marker type="barcode" value="0">
+        <a-entity gltf-model="./babochka.glb" position="0 0.8 0" scale="0.4 0.4 0.4"></a-entity>
+        <a-text value="Буква «бабочка» если сложить крылья. Запиши в заметки эту букву." align="center" position="0 -0.4 0" color="#ffec9f" scale="0.7 0.7 0.7" width="2.5"></a-text>
+      </a-marker>
+
+      <!-- Маркер 1 — Змей Горыныч (gorinish.glb) -->
+      <a-marker type="barcode" value="1">
+        <a-entity gltf-model="./gorinish.glb" position="0 0.8 0" rotation="0 0 0" scale="1.6 1.6 1.6"></a-entity>
+        <a-text value="Я сражался с Добрыней, сколько голов участвовало в бою? Получившуюся цифру запиши в заметки." align="center" position="0 -0.4 0" color="#ffec9f" scale="0.7 0.7 0.7" width="2.5"></a-text>
+      </a-marker>
+
+      <!-- Маркер 2 — Домовой (kosei.glb) -->
+      <a-marker type="barcode" value="2">
+        <a-entity gltf-model="./kosei.glb" position="-0.7 0.8 0.5" rotation="0 0 0" scale="0.3 0.3 0.3"></a-entity>
+        <a-text value="Самый главный сказочный злодей, запиши в заметки первую его букву." align="center" position="0 -0.4 0" color="#ffec9f" scale="0.7 0.7 0.7" width="2.5"></a-text>
+      </a-marker>
+
+      <!-- Маркер 3 — Леший (leshi.glb) -->
+      <a-marker type="barcode" value="3">
+        <a-entity gltf-model="./leshi.glb" position="0 0.8 0" rotation="0 0 0" scale="0.5 0.5 0.5"></a-entity>
+        <a-text value="Сколько красных скворечников у лешего на заборе, сосчитай и получившуюся цифру запиши в заметки." align="center" position="0 -0.4 0" color="#ffec9f" scale="0.7 0.7 0.7" width="2.5"></a-text>
+      </a-marker>
+
+      <!-- Маркер 4 — Баба Яга (пока voron.glb) -->
+      <a-marker type="barcode" value="4">
+        <a-entity gltf-model="./voron.glb" position="-1 0.8 0.5" rotation="0 0 0" scale="3 3 3"></a-entity>
+        <a-text value="Последняя буква птицы, которая сторожит объект бабы Яги , запиши ее в заметки." align="center" position="0 -0.4 0" color="#ffec9f" scale="0.7 0.7 0.7" width="2.5"></a-text>
+      </a-marker>
+
+      <a-entity camera></a-entity>
+    `;
+
+    scene.addEventListener("loaded", () => {
+      const arCamera = scene.querySelector("a-camera");
+      if (arCamera && arCamera.components && arCamera.components.material) {
+        const mat = arCamera.components.material;
+        if (mat.material && mat.material.map) {
+          mat.material.map.image.srcObject = stream;
         }
-
-        if (uc === CORRECT_CODE) {
-            rd.innerHTML = "🎉✨ ПОЗДРАВЛЯЕМ! ✨🎉<br><br>⭐ Ты настоящий следопыт! ⭐<br><br>🏆 Беги на сказочную кассу (синий домик при входе в парк) за призом!";
-            rd.style.background = "#4caf50";
-            rd.style.color = "white";
-            localStorage.setItem('prizeClaimedTime', now.toString());
-        } else {
-            rd.innerHTML = "🌿 Ошибка! Проверь порядок и символы. Вернись к первому маркеру (Ворон). 🌿<br><br>🌟 У тебя получится!";
-            rd.style.background = "#e53935";
-            rd.style.color = "white";
-        }
-    }
-
-    function showModal(type){
-        const modal=document.getElementById('modal'), modalBody=document.getElementById('modalBody');
-        if(type==='notes'){
-            modalBody.innerHTML = buildNotesUI();
-            notesField = document.getElementById('notesField');
-            saveNotesBtn = document.getElementById('saveNotesBtn');
-            loadNotes();
-            if(saveNotesBtn) saveNotesBtn.addEventListener('click', saveNotes);
-        } else {
-            // Проверка блокировки приза перед показом поля ввода кода
-            const stored = localStorage.getItem('prizeClaimedTime');
-            let blocked = false;
-            if (stored) {
-                const claimedTime = parseInt(stored, 10);
-                if (Date.now() - claimedTime < LOCK_DURATION) {
-                    blocked = true;
-                } else {
-                    localStorage.removeItem('prizeClaimedTime');
-                }
-            }
-
-            if (blocked) {
-                // Только сообщение, без дополнительной кнопки (используем штатную кнопку ЗАКРЫТЬ)
-                modalBody.innerHTML = `
-                    <h3>🎁 Приз уже получен!</h3>
-					<br>
-                    <p>Ты уже забирал свой приз.</p> 
-					<p>Приходи за новым через 24 часа.</p>
-                `;
-            } else {
-                // Обычный интерфейс ввода кода
-                modalBody.innerHTML = buildCodeUI();
-                codeInput = document.getElementById('codeInput');
-                checkBtn = document.getElementById('checkCodeBtn');
-                resetBtn = document.getElementById('resetGameBtn');
-                if(checkBtn) checkBtn.addEventListener('click', checkCode);
-                if(resetBtn) resetBtn.addEventListener('click', resetGame);
-            }
-        }
-        modal.style.display='flex';
-    }
-
-    let toast, toastIcon, toastText, closeToastBtn, toastTimeout;
-    function initToast() {
-        toast = document.getElementById('taskToast');
-        toastIcon = document.getElementById('toastIcon');
-        toastText = document.getElementById('toastText');
-        closeToastBtn = document.getElementById('closeToast');
-        if (closeToastBtn) closeToastBtn.addEventListener('click', () => toast.classList.remove('show'));
-    }
-    function showToast(markerValue) {
-        if (!toast) return;
-        const task = tasks[markerValue];
-        if (!task) return;
-        toastIcon.innerHTML = task.icon;
-        toastText.innerHTML = task.text;
-        toast.classList.add('show');
-        if (toastTimeout) clearTimeout(toastTimeout);
-        toastTimeout = setTimeout(() => toast.classList.remove('show'), 5000);
-    }
-
-    async function getCameraStream() {
-        try {
-            const constraints = { video: { facingMode: { exact: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } } };
-            return await navigator.mediaDevices.getUserMedia(constraints);
-        } catch (err) {
-            console.warn("Тыловая камера не найдена, пробуем любую", err);
-            try { return await navigator.mediaDevices.getUserMedia({ video: true }); }
-            catch (err2) { throw new Error("Камера не доступна: " + err2.message); }
-        }
-    }
-
-    async function initAR() {
-        const statusDiv = document.getElementById('statusMsg');
-        statusDiv.style.display = 'block';
-        statusDiv.innerText = "📷 Запрос доступа к камере...";
-        try {
-            const stream = await getCameraStream();
-            statusDiv.innerText = "📷 Камера получена, запускаем AR...";
-            const videoElement = document.createElement('video');
-            videoElement.srcObject = stream;
-            videoElement.autoplay = true;
-            videoElement.muted = true;
-            videoElement.playsInline = true;
-            await videoElement.play();
-
-            const scene = document.createElement('a-scene');
-            scene.setAttribute('embedded', '');
-            scene.setAttribute('arjs', 'sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;');
-
-            // ---------- НОВЫЕ МАРКЕРЫ С МОДЕЛЯМИ ----------
-            scene.innerHTML = `
-                <!-- Маркер 0 — babochka.glb (Ворон) без поворота -->
-                <a-marker type="barcode" value="0">
-                    <a-entity gltf-model="./babochka.glb" position="0 0.8 0" scale="0.4 0.4 0.4"></a-entity>
-                    <a-text value="Буква «бабочка» если сложить крылья. Запиши в заметки эту букву." align="center" position="0 -0.4 0" color="#ffec9f" scale="0.7 0.7 0.7" width="2.5"></a-text>
-                </a-marker>
-
-                <!-- Маркер 1 — gorinish.glb (Змей Горыныч) с поворотом X=90 -->
-                <a-marker type="barcode" value="1">
-                    <a-entity gltf-model="./gorinish.glb" position="0 0.8 0" rotation="0 0 0" scale="1.6 1.6 1.6"></a-entity>
-                    <a-text value="Я сражался с Добрыней, сколько голов участвовало в бою? Получившуюся цифру запиши в заметки." align="center" position="0 -0.4 0" color="#ffec9f" scale="0.7 0.7 0.7" width="2.5"></a-text>
-                </a-marker>
-
-                <!-- Маркер 2 — kosei.glb (Кощей) с поворотом X=90 -->
-                <a-marker type="barcode" value="2">
-                    <a-entity gltf-model="./kosei.glb" position="-0.7 0.8 0.5" rotation="0 0 0" scale="0.3 0.3 0.3"></a-entity>
-                    <a-text value="Самый главный сказочный злодей, запиши в заметки первую его букву." align="center" position="0 -0.4 0" color="#ffec9f" scale="0.7 0.7 0.7" width="2.5"></a-text>
-                </a-marker>
-
-                <!-- Маркер 3 — leshi.glb (Леший) с поворотом X=90 -->
-                <a-marker type="barcode" value="3">
-                    <a-entity gltf-model="./leshi.glb" position="0 0.8 0" rotation="0 0 0" scale="0.5 0.5 0.5"></a-entity>
-                    <a-text value="Сколько красных скворечников у лешего на заборе, сосчитай и получившуюся цифру запиши в заметки." align="center" position="0 -0.4 0" color="#ffec9f" scale="0.7 0.7 0.7" width="2.5"></a-text>
-                </a-marker>
-
-                <!-- Маркер 4 — voron.glb (Баба Яга) с поворотом X=90 -->
-                <a-marker type="barcode" value="4">
-                    <a-entity gltf-model="./voron.glb" position="-1 0.8 0.5" rotation="0 0 0" scale="3 3 3"></a-entity>
-                    <a-text value="Последняя буква птицы, которая сторожит объект бабы Яги , запиши ее в заметки." align="center" position="0 -0.4 0" color="#ffec9f" scale="0.7 0.7 0.7" width="2.5"></a-text>
-                </a-marker>
-
-                <a-entity camera></a-entity>
-            `;
-
-            scene.addEventListener('loaded', () => {
-                const arCamera = scene.querySelector('a-camera');
-                if (arCamera && arCamera.components && arCamera.components.material) {
-                    const mat = arCamera.components.material;
-                    if (mat.material && mat.material.map) {
-                        mat.material.map.image.srcObject = stream;
-                    }
-                }
-                setTimeout(() => {
-                    const markers = scene.querySelectorAll('a-marker');
-                    markers.forEach(m => {
-                        m.addEventListener('markerFound', () => {
-                            const val = m.getAttribute('value');
-                            showToast(val);
-                        });
-                    });
-                }, 1000);
-                statusDiv.style.display = 'none';
-            });
-
-            document.getElementById('arContainer').appendChild(scene);
-        } catch (err) {
-            statusDiv.innerText = "❌ Ошибка: " + err.message;
-            console.error(err);
-        }
-    }
-
-    document.getElementById('startQuestBtn').addEventListener('click', async () => {
-        document.getElementById('welcomeScreen').style.display = 'none';
-        document.getElementById('arContainer').style.display = 'block';
-        document.getElementById('toastAndPanels').style.display = 'block';
-        initToast();
-        document.getElementById('notesBtn').addEventListener('click', () => showModal('notes'));
-        document.getElementById('codeBtn').addEventListener('click', () => showModal('code'));
-        document.getElementById('closeModal').addEventListener('click', () => document.getElementById('modal').style.display = 'none');
-        await initAR();
+      }
+      setTimeout(() => {
+        scene.querySelectorAll("a-marker").forEach(m => {
+          m.addEventListener("markerFound", () => onMarkerFound(String(m.getAttribute("value"))));
+        });
+      }, 1000);
+      statusDiv.style.display = "none";
     });
+
+    document.getElementById("arContainer").appendChild(scene);
+  } catch (err) {
+    statusDiv.innerText = "❌ Ошибка: " + err.message;
+    console.error(err);
+  }
+}
+
+/* =====================================================================
+   ЗАПУСК
+   ===================================================================== */
+document.getElementById("startQuestBtn").addEventListener("click", async () => {
+  voice.unlock(); // разрешаем звук, пока есть жест пользователя
+
+  document.getElementById("welcomeScreen").style.display = "none";
+  document.getElementById("arContainer").style.display = "block";
+  document.getElementById("uiLayer").style.display = "block";
+
+  pill = document.getElementById("topPill");
+  pillIcon = document.getElementById("pillIcon");
+  pillLabel = document.getElementById("pillLabel");
+  infoOverlay = document.getElementById("infoOverlay");
+  infoIcon = document.getElementById("infoIcon");
+  infoTitle = document.getElementById("infoTitle");
+  infoText = document.getElementById("infoText");
+  infoAudioBtn = document.getElementById("infoAudioBtn");
+  riddleCard = document.getElementById("riddleCard");
+  riddleIcon = document.getElementById("riddleIcon");
+  riddleText = document.getElementById("riddleText");
+  riddleAudioBtn = document.getElementById("riddleAudioBtn");
+  riddleBtn = document.getElementById("riddleBtn");
+
+  pill.addEventListener("click", () => openInfo(pill.dataset.mode));
+  pill.addEventListener("animationend", () => pill.classList.remove("attention"));
+  infoAudioBtn.addEventListener("click", playInfoAudio);
+  document.getElementById("infoCloseBtn").addEventListener("click", closeInfo);
+  riddleAudioBtn.addEventListener("click", () => { if (currentRiddle) playRiddleAudio(currentRiddle); });
+  document.getElementById("riddleCloseBtn").addEventListener("click", closeRiddle);
+  riddleBtn.addEventListener("click", () => { if (progress.last) showRiddle(progress.last); });
+  riddleBtn.disabled = !progress.last;
+
+  document.getElementById("notesBtn").addEventListener("click", () => showModal("notes"));
+  document.getElementById("codeBtn").addEventListener("click", () => showModal("code"));
+  document.getElementById("closeModal").addEventListener("click", closeModal);
+
+  await initAR();
+});
 </script>
 </body>
 </html>
