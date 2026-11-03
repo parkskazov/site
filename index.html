@@ -159,7 +159,8 @@ button { font-family: inherit; }
    НАСТРОЙКИ КВЕСТА
    ===================================================================== */
 
-// Порядок прохождения (ID маркеров): Яга → Ворон → Домовой → Горыныч → Леший
+// Задуманный маршрут (ID маркеров): Яга → Ворон → Домовой → Горыныч → Леший.
+// Подсказки от порядка НЕ зависят; список нужен только для переноса старого сохранённого прогресса.
 const MARKER_ORDER = ["4", "0", "2", "1", "3"];
 
 // Загадки (по ID маркера)
@@ -177,14 +178,14 @@ const STORY = {
   text: "Здравствуй, добрый путник! Пишет тебе Василиса Премудрая прямо из плена Кощея Бессмертного. Мне нужна помощь бесстрашного богатыря, который готов пройти полный тайн путь и разгадать все загадки Парка Сказов. Тебе предстоит найти 5 маркеров на территории Сказочного Парка, отгадать шифр из цифр и букв, и вписать его в финальное окно. Будь осторожен на пути, смотри в оба и будь внимателен! А первую часть кода ты найдешь рядом с тем местом, где живет мудрая старушка. Однажды она вручила Ивану Царевичу путеводный клубок. Он точно поможет тебе в твоем путешествии. Удачи!"
 };
 
-// Подсказки: ключ — маркер, который гость ТОЛЬКО ЧТО отсканировал;
-// текст ведёт к следующему маркеру. У последнего маркера подсказки нет.
+// Подсказки: ключ — маркер, который гость отсканировал ПОСЛЕДНИМ (в любом порядке, в том числе повторно);
+// текст ведёт к следующему маркеру по задуманному маршруту.
 const HINTS = {
   "4": "Загляни в самую высокую башню, откуда свисают прекрасные волосы Рапунцель",
   "0": "Рядом слышалось кудахтанье петухов и милый писк кроликов",
   "2": "Рядом с рестораном была замечена необыкновенная огненно-рыжая девушка с большой любовью к танцам и пляскам",
   "1": "Если заблудишься в лесу, наш добрый старичок лесничий всегда поможет найти дорогу домой",
-  "3": null
+  "3": "Ты всё прошёл, можешь вводить код"
 };
 
 // Озвучка. Если файла нет в репозитории — кнопка «Прослушать» просто скрывается.
@@ -202,12 +203,13 @@ const AUDIO = {
     "3": a("Загадка Леший.mp3")
   },
   // Ключ — маркер, после скана которого показывается подсказка.
-  // Подсказка 1 и 2 в репозитории пока не загружены — имена уже прописаны, заработают после загрузки.
+  // Подсказки 1, 2 и 5 в репозитории пока не загружены — имена уже прописаны, заработают после загрузки.
   hint: {
     "4": a("Подсказка 1.mp3"),      // «Загляни в самую высокую башню…»
     "0": a("Подсказка 2.mp3"),      // «Рядом слышалось кудахтанье петухов…»
     "2": a("Подсказка 3.mp3"),      // «Рядом с рестораном…»
-    "1": a("Подсказка 4.mp3")       // «Если заблудишься в лесу…»
+    "1": a("Подсказка 4.mp3"),      // «Если заблудишься в лесу…»
+    "3": a("Подсказка 5.mp3")       // «Ты всё прошёл, можешь вводить код» (файла пока нет)
   },
   final: a("Финал.mp3")
 };
@@ -246,15 +248,18 @@ const store = {
 function loadProgress() {
   try {
     const o = JSON.parse(store.get(KEY_PROGRESS) || "null");
-    if (o && typeof o.step === "number" && o.step >= -1 && o.step < MARKER_ORDER.length) {
-      return { storySeen: !!o.storySeen, step: o.step, last: tasks[o.last] ? o.last : null };
+    if (o) {
+      let last = tasks[o.last] ? o.last : null;
+      // перенос со старого формата, где хранился номер шага
+      if (!last && typeof o.step === "number" && MARKER_ORDER[o.step]) last = MARKER_ORDER[o.step];
+      return { storySeen: !!o.storySeen, last };
     }
   } catch (e) {}
-  return { storySeen: false, step: -1, last: null };
+  return { storySeen: false, last: null };
 }
 function saveProgress() { store.set(KEY_PROGRESS, JSON.stringify(progress)); }
 
-let progress = loadProgress();   // step: индекс самого дальнего отсканированного маркера в MARKER_ORDER
+let progress = loadProgress();   // last: ID последнего отсканированного маркера (null — ещё ничего не сканировали)
 let currentRiddle = null;        // какая загадка сейчас показана / была закрыта
 
 /* =====================================================================
@@ -327,8 +332,8 @@ document.addEventListener("visibilitychange", () => { if (document.hidden) voice
 let pill, pillIcon, pillLabel, infoOverlay, infoIcon, infoTitle, infoText, infoAudioBtn, infoOpen = false, infoSrc = null;
 
 function pillMode() {
-  if (progress.step < 0) return "story";
-  return HINTS[MARKER_ORDER[progress.step]] ? "hint" : null;
+  if (!progress.last) return "story";
+  return HINTS[progress.last] ? "hint" : null;
 }
 
 function updatePill(attention) {
@@ -351,7 +356,7 @@ function openInfo(kind) {
   if (kind === "story") {
     title = STORY.title; text = STORY.text; icon = "📜"; src = AUDIO.story;
   } else {
-    const id = MARKER_ORDER[progress.step];
+    const id = progress.last;
     text = id ? HINTS[id] : null;
     if (!text) return;
     title = "Подсказка"; icon = yarnHTML; src = AUDIO.hint && AUDIO.hint[id];
@@ -393,8 +398,6 @@ function showRiddle(id) {
   const t = tasks[id];
   if (!t) return;
   currentRiddle = id;
-  progress.last = id;
-  saveProgress();
   riddleIcon.textContent = t.icon;
   riddleText.textContent = t.text;
   riddleCard.classList.add("show");
@@ -408,20 +411,21 @@ function closeRiddle() {
 }
 
 function onMarkerFound(id) {
-  const idx = MARKER_ORDER.indexOf(id);
-  if (idx < 0) return;
-  const isNew = idx > progress.step;
+  if (!tasks[id]) return;
+  // Подсказка всегда соответствует последнему отсканированному маркеру — в любом порядке и при повторном скане
+  const hintChanges = progress.last !== id;
 
-  // Пока открыто окно сюжета/подсказки, повторные срабатывания старых маркеров игнорируем,
-  // чтобы они не перебивали озвучку. Новый маркер закрывает окно.
+  // Пока открыто окно сюжета/подсказки, повторные срабатывания того же маркера игнорируем,
+  // чтобы они не перебивали озвучку. Другой маркер закрывает окно.
   if (infoOpen) {
-    if (!isNew) return;
+    if (!hintChanges) return;
     closeInfo();
   }
 
-  if (isNew) {
-    progress.step = idx;
+  if (hintChanges) {
+    progress.last = id;
     saveProgress();
+    riddleBtn.disabled = false;
     updatePill(true);
   }
 
@@ -463,7 +467,7 @@ function saveNotes() {
 function resetGame() {
   store.del(KEY_NOTES);
   // Приз (prizeClaimedTime) намеренно не трогаем — блокировка на 24 часа остаётся
-  progress = { storySeen: true, step: -1, last: null };
+  progress = { storySeen: true, last: null };
   saveProgress();
   currentRiddle = null;
   closeRiddle();
@@ -557,7 +561,7 @@ async function getCameraStream() {
 // Камера доступна → показываем сюжет (один раз; потом он живёт плашкой сверху)
 function onCameraReady() {
   updatePill(false);
-  if (!progress.storySeen && progress.step < 0) {
+  if (!progress.storySeen && !progress.last) {
     progress.storySeen = true;
     saveProgress();
     openInfo("story");
